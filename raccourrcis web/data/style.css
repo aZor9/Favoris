@@ -1,0 +1,89 @@
+.zomm{
+	width:100px; 
+	height:100px;
+	transition: 0.2s;
+}
+
+.zomm:hover{
+	/*background: rgba(256, 256, 256, 0.35);
+	border-radius:50px 50px;
+	width: 150%;*/
+
+	filter: drop-shadow(1px 1px 10px white);
+	text-decoration: underline;
+	text-decoration-color: purple;
+	transition: 0.2s;
+}
+
+
+.zomm2{
+	transition: 0.3s;
+}
+
+.zomm2:hover{
+	filter: drop-shadow(1px 1px 7px white);
+	text-decoration: underline;
+	transition: 0.2s;
+}
+
+.img2{
+	width: 90px; 
+	height: 90px;
+	transition: 0.5s;
+}
+
+.img2:hover{
+	width: 100px; 
+	height: 100px;
+	transition: 0.2s;
+}
+
+
+
+h3{
+	opacity: 0%;
+}
+
+h3:hover{
+	opacity: 10%;
+	color: blue;
+}
+
+
+#blanco {
+	width:  90%;
+	text-align: center; 
+	background: rgba(256, 256, 256, 0.25); 
+	border-radius:40px 40px;
+	transition: 0.4s;
+	}
+	
+#blanco:hover {
+	width: 95%;
+	text-align: center; 
+	background: rgba(256, 256, 256, 0.35); 
+	border-radius:75px 75px;
+	transition: 0.3s;
+	}
+
+#blanco2 {
+	width: 25%;
+	text-align: center; 
+	background: rgba(256, 256, 256, 0.25); 
+	border-radius:50px 50px;
+	transition: 0.7s;
+	}
+	
+#blanco2:hover {
+	width: 30%;
+	text-align: center; 
+	background: rgba(256, 256, 256, 0.40); 
+	border-radius:50px 50px;
+	transition: 0.5s;
+	}
+
+
+
+/*
+commentaire
+*/
