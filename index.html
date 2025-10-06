@@ -150,11 +150,16 @@
       body.editing #links { padding-bottom: 320px; }
     }
     .add-link { margin-top: 12px; }
+    .network-status { margin: 8px auto 0; padding: 8px 12px; border-radius: 8px; max-width: 820px; font-size: 0.95rem; }
+    .network-status.hidden { display: none; }
+    .network-status.offline { color: #7f1d1d; background: rgba(183,28,28,0.06); border: 1px solid rgba(183,28,28,0.12); }
+    .network-status.online { color: #065f46; background: rgba(6,95,70,0.06); border: 1px solid rgba(6,95,70,0.12); }
   </style>
 </head>
 <body>
   <div id="bg"></div>
   <h1>Ma page d'accueil 🌟</h1>
+  <div id="networkStatus" aria-live="polite" class="network-status hidden"></div>
   <div id="links"></div>
   <div>
     <button id="editBtn" onclick="toggleEditMode()">Personnaliser</button>
@@ -164,12 +169,12 @@
   <script>
     const defaultLinks = [
       { name: "Google", url: "https://www.google.com" },
-      { name: "YouTube", url: "https://www.youtube.com" },
-      { name: "LinkedIn", url: "https://www.linkedin.com", appUrl: "linkedin://" },
+      { name: "YouTube", url: "https://www.youtube.com", appUrl: "vnd.youtube://", intent: "intent://www.youtube.com/#Intent;package=com.google.android.youtube;scheme=https;end" },
+      { name: "LinkedIn", url: "https://www.linkedin.com", appUrl: "linkedin://", intent: "intent://www.linkedin.com/#Intent;package=com.linkedin.android;scheme=https;end" },
       // appUrl examples: these are best-effort and may vary by platform/version
-      { name: "Netflix", url: "https://www.netflix.com", appUrl: "nflx://" },
-      // Gmail: mailto: will open the native mail app; googlegmail:// may open Gmail on some devices
-      { name: "Gmail", url: "https://mail.google.com", appUrl: "googlegmail://", altAppUrl: "mailto:" }
+      { name: "Netflix", url: "https://www.netflix.com", appUrl: "nflx://", intent: "intent://www.netflix.com/#Intent;package=com.netflix.mediaclient;scheme=https;end" },
+      // Gmail: prefer intent to open Gmail app; mailto: is kept as alt fallback for native mail clients
+      { name: "Gmail", url: "https://mail.google.com", appUrl: "googlegmail://", altAppUrl: "mailto:", intent: "intent://mail.google.com/#Intent;package=com.google.android.gm;scheme=https;end" }
     ];
 
     function getLinks() {
@@ -364,55 +369,80 @@
     }
 
     // Try to open a native app using a scheme or intent, then fallback to the web URL.
-    // Behaviour notes:
-    // - On Android you can also use an "intent:" URL to target a package directly.
-    // - On iOS, universal links (https with proper apple-app-site-association) will open the app automatically.
-    // - Schemes (like "vnd.youtube://" or "nflx://") are best-effort and vary by app/version.
+    // Improved approach: listen for visibilitychange — if the document becomes hidden shortly after
+    // attempting the app open, assume the app was launched and don't navigate to the web fallback.
+    // Network status helpers
+    function setNetworkMessage(message, state) {
+      const el = document.getElementById('networkStatus');
+      if (!el) return;
+      el.textContent = message || '';
+      el.classList.remove('offline','online','hidden');
+      if (!message) { el.classList.add('hidden'); return; }
+      if (state === 'offline') el.classList.add('offline'); else el.classList.add('online');
+    }
+
+    function updateNetworkStatus() {
+      if (navigator.onLine) {
+        setNetworkMessage('Tu es en ligne.', 'online');
+        setTimeout(() => setNetworkMessage('', ''), 2000);
+      } else {
+        setNetworkMessage('Hors ligne — certain·e·s liens web ne fonctionneront pas.', 'offline');
+      }
+    }
+
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+
+    // Try to open a native app using a scheme or intent, then fallback to the web URL.
+    // Behaviour: do NOT attempt the web fallback when the browser is offline.
     function tryOpenApp(link) {
       const web = link.url;
       const app = link.appUrl || link.altAppUrl || null;
       const intent = link.intent || null;
 
-      // If an explicit Android intent URL is provided, use it (it will either open the app or the Play Store)
-      if (intent) {
-        window.location = intent;
+      const ua = navigator.userAgent || '';
+      const isAndroid = /Android/i.test(ua);
+
+      let hidden = false;
+      function onVisibility() { if (document.hidden || document.webkitHidden) hidden = true; }
+      document.addEventListener('visibilitychange', onVisibility);
+      window.addEventListener('pagehide', onVisibility);
+
+      const tryIntent = () => {
+        if (!intent) return false;
+        try { window.location.replace(intent); return true; } catch (e) { return false; }
+      };
+      const tryAppScheme = () => {
+        if (!app) return false;
+        try { window.location = app; return true; } catch (e) { return false; }
+      };
+
+      // If offline, do not attempt to open web fallback; just try app schemes/intents and show message
+      const offline = !navigator.onLine;
+
+      if (isAndroid && intent) {
+        tryIntent();
+        setTimeout(() => {
+          if (hidden) return; // app opened
+          if (tryAppScheme()) {
+            setTimeout(() => { if (hidden) return; if (!offline) window.location.href = web; else setNetworkMessage('Hors ligne — impossible d\'ouvrir la version web.', 'offline'); }, 900);
+          } else {
+            if (!offline) window.location.href = web; else setNetworkMessage('Hors ligne — impossible d\'ouvrir la version web.', 'offline');
+          }
+        }, 800);
         return;
       }
 
-      if (!app) {
-        // nothing special to try
-        window.location = web;
+      if (tryAppScheme()) {
+        setTimeout(() => { if (hidden) return; if (!offline) window.location.href = web; else setNetworkMessage('Hors ligne — impossible d\'ouvrir la version web.', 'offline'); }, 1200);
         return;
       }
 
-      // Try to open the app via location change first (works on many Android browsers)
-      let opened = false;
-      const start = Date.now();
-      // Some schemes behave better via setting location, others via iframe on iOS. Try both.
-      try {
-        // attempt open by setting location
-        window.location = app;
-      } catch (e) {
-        // ignore
-      }
-
-      // also create a hidden iframe as a fallback attempt (older iOS)
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = app;
-      document.body.appendChild(iframe);
-
-      // After a short delay, assume app didn't open and navigate to the web fallback
-      setTimeout(() => {
-        try {
-          document.body.removeChild(iframe);
-        } catch (e) {}
-        // If the page is still visible (time since start small), go to web URL
-        if (Date.now() - start < 2000) {
-          window.location = web;
-        }
-      }, 1200);
+      if (!offline) window.location.href = web; else setNetworkMessage('Hors ligne — impossible d\'ouvrir la version web.', 'offline');
     }
+
+    // Initialize network status display on load
+    updateNetworkStatus();
 
     function toggleEditMode() {
       editMode = !editMode;
