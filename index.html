@@ -133,6 +133,8 @@
       /* smaller fixed edit/reset buttons */
       #editBtn { right: 14px; bottom: 14px; padding: 10px 12px; }
       #resetBtn { right: 84px; bottom: 14px; padding: 8px 10px; }
+  /* hide bottom export/import controls on small screens (we render them below the add button) */
+  #exportBtn, #importBtn { display: none !important; }
 
       /* slightly reduce blur on small devices for performance */
       #bg { filter: blur(6px) brightness(0.6); }
@@ -181,6 +183,9 @@
   <div id="links"></div>
   <div>
     <button id="editBtn" onclick="toggleEditMode()">Personnaliser</button>
+    <button id="exportBtn" style="display:none; margin-right:6px;">Exporter (JSON)</button>
+    <button id="importBtn" style="display:none; margin-right:6px;">Importer (JSON)</button>
+    <input id="importInput" type="file" accept="application/json" style="display:none" />
     <button onclick="resetStorage()" id="resetBtn">Réinitialiser</button>
   </div>
 
@@ -321,16 +326,14 @@
           saveSettings(titleInput.value, bgInput.value);
         };
         // remove the default top margin for these inline settings buttons
-        saveSettingsBtn.style.marginTop = '0';
-        saveSettingsBtn.classList.add('btn-save');
-        saveSettingsBtn.classList.add('btn-save');
+  saveSettingsBtn.style.marginTop = '0';
+  saveSettingsBtn.classList.add('btn-save');
 
     const cancelSettingsBtn = document.createElement('button');
     cancelSettingsBtn.textContent = 'Annuler';
   cancelSettingsBtn.onclick = () => { renderLinks(); };
   // remove top margin to keep the settings panel compact
   cancelSettingsBtn.style.marginTop = '0';
-  cancelSettingsBtn.classList.add('btn-cancel');
   cancelSettingsBtn.classList.add('btn-cancel');
 
         settings.appendChild(titleInput);
@@ -429,6 +432,30 @@
         const addBtn = document.createElement('button');
         addBtn.textContent = 'Ajouter un lien';
         addBtn.onclick = addLink;
+        // on small screens, render export/import under the add block
+        try {
+          if (window.matchMedia && window.matchMedia('(max-width: 600px)').matches) {
+            const mobileExp = document.createElement('button');
+            mobileExp.textContent = 'Exporter (JSON)';
+            mobileExp.classList.add('btn-save');
+            mobileExp.style.display = 'block';
+            mobileExp.style.width = '100%';
+            mobileExp.style.marginTop = '8px';
+            mobileExp.onclick = exportLinks;
+            add.appendChild(mobileExp);
+
+            const mobileImp = document.createElement('button');
+            mobileImp.textContent = 'Importer (JSON)';
+            mobileImp.classList.add('btn-cancel');
+            mobileImp.style.display = 'block';
+            mobileImp.style.width = '100%';
+            mobileImp.style.marginTop = '6px';
+            mobileImp.onclick = () => { const inp = document.getElementById('importInput'); if (inp) inp.click(); };
+            add.appendChild(mobileImp);
+          }
+        } catch (e) {
+          // ignore matchMedia errors
+        }
         add.appendChild(addBtn);
         container.appendChild(add);
       }
@@ -510,6 +537,22 @@
     // Initialize network status display on load
     updateNetworkStatus();
 
+    // wire up export/import bottom controls
+    document.addEventListener('DOMContentLoaded', () => {
+      const exp = document.getElementById('exportBtn');
+      const imp = document.getElementById('importBtn');
+      const inp = document.getElementById('importInput');
+      if (exp) exp.onclick = exportLinks;
+      if (imp && inp) {
+        imp.onclick = () => inp.click();
+        inp.onchange = (e) => {
+          const f = e.target.files && e.target.files[0];
+          if (f) importFromFile(f);
+          e.target.value = '';
+        };
+      }
+    });
+
     function toggleEditMode() {
       editMode = !editMode;
       document.getElementById('editBtn').textContent = editMode ? 'Terminer' : 'Personnaliser';
@@ -517,15 +560,19 @@
       const reset = document.getElementById('resetBtn');
       if (reset) reset.style.display = editMode ? 'inline-block' : 'none';
       // toggle body classes so mobile CSS can add bottom padding and show reset when needed
-      if (editMode) {
-          document.body.classList.add('editing');
-          document.body.classList.add('show-reset');
-          const editBtn = document.getElementById('editBtn'); if (editBtn) editBtn.classList.add('btn-save');
-      } else {
-          document.body.classList.remove('editing');
-          document.body.classList.remove('show-reset');
-          const editBtn = document.getElementById('editBtn'); if (editBtn) editBtn.classList.remove('btn-save');
-      }
+    if (editMode) {
+      document.body.classList.add('editing');
+      document.body.classList.add('show-reset');
+      const editBtn = document.getElementById('editBtn'); if (editBtn) editBtn.classList.add('btn-save');
+      const exp = document.getElementById('exportBtn'); if (exp) exp.style.display = 'inline-block';
+      const imp = document.getElementById('importBtn'); if (imp) imp.style.display = 'inline-block';
+    } else {
+      document.body.classList.remove('editing');
+      document.body.classList.remove('show-reset');
+      const editBtn = document.getElementById('editBtn'); if (editBtn) editBtn.classList.remove('btn-save');
+      const exp = document.getElementById('exportBtn'); if (exp) exp.style.display = 'none';
+      const imp = document.getElementById('importBtn'); if (imp) imp.style.display = 'none';
+    }
       renderLinks();
     }
 
@@ -647,6 +694,51 @@
       links[index] = tmp;
       localStorage.setItem('links', JSON.stringify(links));
       renderLinks();
+    }
+
+    // Export current data (links + pageTitle + bgImage) as a JSON file
+    function exportLinks() {
+      const payload = {
+        links: getLinks(),
+        pageTitle: localStorage.getItem('pageTitle') || null,
+        bgImage: localStorage.getItem('bgImage') || null,
+        exportedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'favoris-backup-' + (new Date()).toISOString().replace(/[:.]/g,'-') + '.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // Import JSON file (expects same shape as exportLinks payload)
+    function importFromFile(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (!data || !Array.isArray(data.links)) {
+            alert('Fichier JSON invalide : le champ "links" est absent ou incorrect.');
+            return;
+          }
+          const ok = confirm('Importer les données depuis le fichier va remplacer vos favoris locaux. Continuer ?');
+          if (!ok) return;
+          localStorage.setItem('links', JSON.stringify(data.links));
+          if (data.pageTitle) localStorage.setItem('pageTitle', data.pageTitle); else localStorage.removeItem('pageTitle');
+          if (data.bgImage) localStorage.setItem('bgImage', data.bgImage); else localStorage.removeItem('bgImage');
+          alert('Importation terminée.');
+          loadSettings();
+          renderLinks();
+        } catch (err) {
+          alert('Erreur lors de la lecture du fichier : ' + err.message);
+        }
+      };
+      reader.onerror = () => alert('Impossible de lire le fichier.');
+      reader.readAsText(file);
     }
 
     function resetStorage() {

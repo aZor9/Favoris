@@ -40,6 +40,12 @@ Tout est contenu dans un seul fichier HTML.
    * l’**image d’arrière-plan** (avec prévisualisation et vérification du chargement)
 5. Clique sur **“Terminer”** pour enregistrer tes changements et quitter le mode édition.
 6. Si besoin, le bouton **“Réinitialiser”** restaure les liens par défaut.
+7. Pour sauvegarder et transférer tes favoris entre appareils :
+
+    * Dans le mode **Personnaliser**, deux nouveaux boutons apparaissent en bas de la page : **Exporter (JSON)** et **Importer (JSON)**.
+    * **Exporter (JSON)** télécharge un fichier contenant tes favoris (`links`), le titre de la page (`pageTitle`) et l'image de fond (`bgImage`).
+    * **Importer (JSON)** permet de charger ce fichier sur un autre appareil. L'import remplace les données locales (confirmation demandée).
+
 
 
 ---
