@@ -165,9 +165,11 @@
     const defaultLinks = [
       { name: "Google", url: "https://www.google.com" },
       { name: "YouTube", url: "https://www.youtube.com" },
-      { name: "LinkedIn", url: "https://www.linkedin.com" },
-      { name: "Netflix", url: "https://www.netflix.com" },
-      { name: "Gmail", url: "https://www.gmail.com" }
+      { name: "LinkedIn", url: "https://www.linkedin.com", appUrl: "linkedin://" },
+      // appUrl examples: these are best-effort and may vary by platform/version
+      { name: "Netflix", url: "https://www.netflix.com", appUrl: "nflx://" },
+      // Gmail: mailto: will open the native mail app; googlegmail:// may open Gmail on some devices
+      { name: "Gmail", url: "https://mail.google.com", appUrl: "googlegmail://", altAppUrl: "mailto:" }
     ];
 
     function getLinks() {
@@ -318,8 +320,15 @@
           // prevent navigation in edit mode; clicking edits
           a.addEventListener('click', (e) => { e.preventDefault(); editLink(idx); });
         } else {
-          // open links in the same page
+          // open links in the same page, but try to open native app first when provided
           a.target = '_self';
+          const hasApp = link.appUrl || link.altAppUrl || link.intent;
+          if (hasApp) {
+            a.addEventListener('click', (e) => {
+              e.preventDefault();
+              tryOpenApp(link);
+            });
+          }
         }
 
         item.appendChild(a);
@@ -352,6 +361,57 @@
         add.appendChild(addBtn);
         container.appendChild(add);
       }
+    }
+
+    // Try to open a native app using a scheme or intent, then fallback to the web URL.
+    // Behaviour notes:
+    // - On Android you can also use an "intent:" URL to target a package directly.
+    // - On iOS, universal links (https with proper apple-app-site-association) will open the app automatically.
+    // - Schemes (like "vnd.youtube://" or "nflx://") are best-effort and vary by app/version.
+    function tryOpenApp(link) {
+      const web = link.url;
+      const app = link.appUrl || link.altAppUrl || null;
+      const intent = link.intent || null;
+
+      // If an explicit Android intent URL is provided, use it (it will either open the app or the Play Store)
+      if (intent) {
+        window.location = intent;
+        return;
+      }
+
+      if (!app) {
+        // nothing special to try
+        window.location = web;
+        return;
+      }
+
+      // Try to open the app via location change first (works on many Android browsers)
+      let opened = false;
+      const start = Date.now();
+      // Some schemes behave better via setting location, others via iframe on iOS. Try both.
+      try {
+        // attempt open by setting location
+        window.location = app;
+      } catch (e) {
+        // ignore
+      }
+
+      // also create a hidden iframe as a fallback attempt (older iOS)
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = app;
+      document.body.appendChild(iframe);
+
+      // After a short delay, assume app didn't open and navigate to the web fallback
+      setTimeout(() => {
+        try {
+          document.body.removeChild(iframe);
+        } catch (e) {}
+        // If the page is still visible (time since start small), go to web URL
+        if (Date.now() - start < 2000) {
+          window.location = web;
+        }
+      }, 1200);
     }
 
     function toggleEditMode() {
