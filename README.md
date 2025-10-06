@@ -18,6 +18,30 @@ Tout est contenu dans un seul fichier HTML.
 * 🔄 **Réinitialisation** des liens à l’état par défaut
 * 📱 **Responsive** : adapté aux mobiles et au tactile
 
+
+---
+
+## 🚀 Comment l’utiliser
+
+1. **Ouvre** le fichier `index.html` dans ton navigateur (double-clic ou via `Fichier → Ouvrir`).
+2. **Clique sur “Personnaliser”** (en bas à droite) pour activer le mode édition.
+3. Dans ce mode, tu peux :
+
+   * 🗑 **Supprimer** un lien
+   * ✎ **Modifier** un lien
+   * ➕ **Ajouter** un nouveau lien en renseignant :
+
+     * son **nom**
+     * son **URL**
+     * *(les autres champs sont facultatifs)*
+4. Le **panneau d’édition** te permet aussi de personnaliser :
+
+   * le **titre** de la page
+   * l’**image d’arrière-plan** (avec prévisualisation et vérification du chargement)
+5. Clique sur **“Terminer”** pour enregistrer tes changements et quitter le mode édition.
+6. Si besoin, le bouton **“Réinitialiser”** restaure les liens par défaut.
+
+
 ---
 
 ## 🧩 Liens par défaut
@@ -30,20 +54,6 @@ Tout est contenu dans un seul fichier HTML.
 | 🎬 Netflix  | [https://www.netflix.com](https://www.netflix.com)   |
 | 📧 Gmail    | [https://www.gmail.com](https://www.gmail.com)       |
 
----
-
-## 🚀 Comment l’utiliser
-
-1. Ouvre `index.html` dans ton navigateur (double-clic ou `Fichier → Ouvrir`).
-2. Clique sur **“Personnaliser”** (en bas à droite).
-3. Clique sur un lien ou sur ✎ pour modifier son nom et son URL.
-4. Utilise **“Ajouter un lien”** pour créer une nouvelle entrée.
-5. Depuis le panneau d’édition, tu peux définir :
-
-   * Le **titre** de la page
-   * L’**image d’arrière-plan** (prévisualisée et vérifiée)
-6. Clique sur **“Terminer”** pour quitter le mode édition.
-7. Le bouton **“Réinitialiser”** restaure les liens par défaut.
 
 ---
 
@@ -51,19 +61,14 @@ Tout est contenu dans un seul fichier HTML.
 
 Chaque lien est enregistré sous forme d’objet dans `links` :
 
-| Propriété                 | Description                                                     |
-| ------------------------- | --------------------------------------------------------------- |
-| `name`                    | Nom du lien                                                     |
-| `url`                     | URL principale (ex : `https://www.youtube.com`)                 |
-| `appUrl` *(optionnel)*    | Schéma d’application (ex: `vnd.youtube://`)                     |
-| `intent` *(optionnel)*    | Intent Android (ex: `intent://www.youtube.com/#Intent;...;end`) |
-| `icon` *(optionnel)*      | Emoji ou chemin d’image                                         |
+| Propriété                 | Description                                                         |
+| ------------------------- | ------------------------------------------------------------------- |
+| `name`                    | **Nom** du lien                                                     |
+| `url`                     | **URL** principale (ex : `https://www.youtube.com`)                 |
+| `appUrl` *(optionnel)*    | **Schéma d’application** (ex: `vnd.youtube://`)                     |
+| `intent` *(optionnel)*    | **Intent Android** (ex: `intent://www.youtube.com/#Intent;...;end`) |
+| `icon` *(optionnel)*      | **Emoji** ou chemin d’image                                         |
 
-### 🧠 Conseils rapides
-
-* Si tu ne sais pas quoi mettre : laisse `appUrl` et `intent` vides.
-* Tu peux ajouter un **emoji** ou une **icône** (`data/logo/...`) pour repérer facilement le lien.
-* Pour tester un **schéma d’app**, tape-le dans la barre d’adresse du navigateur mobile (ex: `whatsapp://`).
 
 ---
 
@@ -87,5 +92,4 @@ Chaque lien est enregistré sous forme d’objet dans `links` :
 * 🔗 Option pour ouvrir les liens dans un **nouvel onglet**
 * 🧩 Boutons pour insérer facilement des *intents* d’apps populaires (YouTube, WhatsApp, Gmail…)
 
-💬 *Si tu veux que j’ajoute une de ces options, indique-le et je l’implémente.*
-
+💬 *Si tu as des idées d'amelioration, ne pas hesiter a m'en faire part.*
