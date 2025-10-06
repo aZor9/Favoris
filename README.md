@@ -1,8 +1,8 @@
 # Favoris — Page de raccourcis
 
-Ce dépôt contient maintenant une seule page statique : `index.html`.
+Ce dépôt contient une seule page statique : `index.html`.
 
-URL publique (si déployée) : https://azor9.github.io/Favoris/  (le lien dans le README est correct)
+URL publique : https://azor9.github.io/Favoris/  
 
 ## Description
 
@@ -37,16 +37,24 @@ Le bouton "Réinitialiser" (visible en mode édition) restaure la liste des lien
 
 ## Clés stockées dans localStorage
 
-- `links` — tableau JSON des raccourcis sauvegardés
-- `pageTitle` — titre personnalisé de la page
-- `bgImage` — URL de l'image d'arrière‑plan
+
+Chaque élément de `links` est un objet pouvant contenir les propriétés suivantes :
+
+- `name` — texte affiché
+- `url` — URL web de fallback
+- `appUrl` — (optionnel) scheme d'application (ex: `vnd.youtube://`, `whatsapp://`)
+- `altAppUrl` — (optionnel) alternative comme `mailto:` pour ouvrir un client mail
+- `intent` — (optionnel, Android) URI `intent:` pour ouvrir directement une application sur Chrome Android
 
 ## Notes et limitations
 
-- Les images d'arrière‑plan sont chargées depuis l'URL fournie. Si la ressource bloque la lecture (CORS), la détection automatique de luminosité peut ne pas fonctionner — la page utilise alors une valeur par défaut pour le contraste du titre.
+- Ouverture d'applications : quand un lien possède `appUrl`/`intent`/`altAppUrl`, la page tentera d'ouvrir l'application native (Intent sur Android, scheme sinon). Si l'application n'est pas installée, la page redirigera vers la `url` web (sauf si l'utilisateur est hors‑ligne).
+- Hors‑ligne : la page affiche un message permanent sous le titre quand l'appareil est hors‑ligne. L'espace occupé par ce message est réservé même quand il n'est pas visible pour éviter les sauts d'écran. Si hors‑ligne, la tentative d'ouverture web ne sera pas faite et la page indiquera que la version web est inaccessible.
 - Le projet est volontairement léger (pas de build, tout est dans `index.html`).
 
 ## Améliorations possibles
+
+Si tu veux que la page affiche un contrôle supplémentaire lors de la modification d'un lien (ex: checkbox "C'est une application" ou boutons pour insérer automatiquement des intents pour WhatsApp/YouTube/Gmail), dis‑le et je l'ajoute.
 
 - Prévisualisation live de l'image de fond pendant la saisie
 - Validation et correction automatique des URLs
