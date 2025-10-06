@@ -165,7 +165,9 @@
     const defaultLinks = [
       { name: "Google", url: "https://www.google.com" },
       { name: "YouTube", url: "https://www.youtube.com" },
-      { name: "LinkedIn", url: "https://www.linkedin.com" }
+      { name: "LinkedIn", url: "https://www.linkedin.com" },
+      { name: "Netflix", url: "https://www.netflix.com" },
+      { name: "Gmail", url: "https://www.gmail.com" }
     ];
 
     function getLinks() {
@@ -316,7 +318,8 @@
           // prevent navigation in edit mode; clicking edits
           a.addEventListener('click', (e) => { e.preventDefault(); editLink(idx); });
         } else {
-          a.target = '_blank';
+          // open links in the same page
+          a.target = '_self';
         }
 
         item.appendChild(a);
