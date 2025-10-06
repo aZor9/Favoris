@@ -387,7 +387,7 @@
         const fieldBg = document.createElement('div'); fieldBg.className = 'field';
         const lblBg = document.createElement('label'); lblBg.textContent = 'Image de fond (URL)';
         const bgInput = document.createElement('input'); bgInput.type = 'url';
-        bgInput.placeholder = 'https://... (laisser vide pour effacer)';
+        bgInput.placeholder = 'https://... (optionnel)';
         bgInput.value = localStorage.getItem('bgImage') || '';
         fieldBg.appendChild(lblBg); fieldBg.appendChild(bgInput);
 
