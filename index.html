@@ -93,12 +93,83 @@
     }
     /* default settings-panel behavior (overridable by media queries) */
   .settings-panel { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; }
+  /* nicer settings panel when editing */
+  .settings-panel {
+    max-width: 880px;
+    margin: 12px auto 18px;
+    padding: 14px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .settings-panel .field {
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:6px;
+    min-width:200px;
+    /* glass card for each field: subtle white tint + blur */
+    background: linear-gradient(rgba(255,255,255,0.82), rgba(255,255,255,0.76));
+    background-color: rgba(255,255,255,0.86); /* fallback */
+    border-radius: 8px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 0 4px 10px rgba(2,6,23,0.04);
+    backdrop-filter: blur(6px) saturate(110%);
+    -webkit-backdrop-filter: blur(6px) saturate(110%);
+  }
+
+  /* reduce blur and padding on small screens for readability */
+  @media (max-width: 600px) {
+    .settings-panel .field {
+      backdrop-filter: blur(4px) saturate(105%);
+      -webkit-backdrop-filter: blur(4px) saturate(105%);
+      padding: 6px 8px;
+    }
+  }
+  .settings-panel label { font-size: 0.85rem; color: #334155; }
+  .settings-panel input[type="text"], .settings-panel input[type="url"] { padding: 10px 12px; border-radius:8px; border:1px solid rgba(16,24,40,0.08); background: #fff; color: #111; min-width: 220px; }
+  .settings-panel .controls { display:flex; gap:8px; align-items:center; }
+  .settings-panel .preview { width: 120px; height: 68px; border-radius:8px; overflow:hidden; border:1px solid rgba(0,0,0,0.06); background:#f6f7f9; display:flex; align-items:center; justify-content:center; }
+  .settings-panel .preview img { width:100%; height:100%; object-fit:cover; display:block; }
+  /* when editing, give each link-item a translucent blurred card so editor stands out */
+  body.editing .link-item {
+    /* 80% white glass card with blur to make editing stand out */
+    background: linear-gradient(rgba(255,255,255,0.84), rgba(255,255,255,0.80));
+    background-color: rgba(255,255,255,0.80); /* 80% white fallback */
+    backdrop-filter: blur(6px) saturate(110%);
+    -webkit-backdrop-filter: blur(6px) saturate(110%);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.8);
+    box-shadow: 0 8px 18px rgba(15,23,42,0.06);
+    padding: 6px;
+  }
+
+  /* slightly reduce blur on small screens for performance and readability */
+  @media (max-width: 600px) {
+    body.editing .link-item {
+      backdrop-filter: blur(4px) saturate(105%);
+      -webkit-backdrop-filter: blur(4px) saturate(105%);
+    }
+  }
   input { padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; min-width: 120px; max-width: 720px; }
     input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,120,255,0.12); }
     button { font-size: 14px; }
   /* link item defaults (moved from JS inline styles) */
   .link-item { display: inline-flex; align-items: center; gap: 6px; position: relative; margin: 6px; }
-  .link-anchor { cursor: pointer; padding: 8px 12px; display: inline-block; position: relative; }
+  .link-anchor {
+    cursor: pointer;
+    padding: 8px 12px;
+    display: inline-block;
+    position: relative;
+    /* glass button: 80% white with backdrop blur */
+    background: rgba(255,255,255,0.8);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.85);
+    box-shadow: 0 2px 6px rgba(2,6,23,0.06);
+    backdrop-filter: blur(6px) saturate(110%);
+    -webkit-backdrop-filter: blur(6px) saturate(110%);
+  }
   .app-badge { display: inline-block; margin-left: 6px; font-size: 0.95em; }
   .link-icon { width: 20px; height: 20px; display: inline-block; margin-right: 8px; vertical-align: middle; }
   .link-icon img { width: 100%; height: 100%; display: block; }
@@ -255,7 +326,9 @@
       h.classList.remove('light-title','dark-title');
       if (!bgUrl) { h.classList.add('dark-title'); return; }
       analyzeImageBrightness(bgUrl, (err, lum) => {
-        if (err || lum === undefined) { h.classList.add('dark-title'); return; }
+        // If brightness analysis fails (often due to CORS), assume a darker background
+        // and use a light title for better contrast. If analysis works, decide by lum.
+        if (err || lum === undefined) { h.classList.add('light-title'); return; }
         if (lum < 130) h.classList.add('light-title'); else h.classList.add('dark-title');
       });
     }
@@ -312,34 +385,47 @@
         const settings = document.createElement('div');
         settings.className = 'settings-panel';
 
-        const titleInput = document.createElement('input');
+        // structured settings with labels and preview
+        const fieldTitle = document.createElement('div'); fieldTitle.className = 'field';
+        const lblTitle = document.createElement('label'); lblTitle.textContent = 'Titre de la page';
+        const titleInput = document.createElement('input'); titleInput.type = 'text';
         titleInput.placeholder = 'Titre de la page';
         titleInput.value = localStorage.getItem('pageTitle') || document.querySelector('h1').textContent || '';
+        fieldTitle.appendChild(lblTitle); fieldTitle.appendChild(titleInput);
 
-        const bgInput = document.createElement('input');
-        bgInput.placeholder = 'URL de l\'image de fond (laisser vide pour effacer)';
+        const fieldBg = document.createElement('div'); fieldBg.className = 'field';
+        const lblBg = document.createElement('label'); lblBg.textContent = 'Image de fond (URL)';
+        const bgInput = document.createElement('input'); bgInput.type = 'url';
+        bgInput.placeholder = 'https://... (laisser vide pour effacer)';
         bgInput.value = localStorage.getItem('bgImage') || '';
+        fieldBg.appendChild(lblBg); fieldBg.appendChild(bgInput);
 
-        const saveSettingsBtn = document.createElement('button');
-        saveSettingsBtn.textContent = 'Enregistrer paramètres';
-        saveSettingsBtn.onclick = () => {
-          saveSettings(titleInput.value, bgInput.value);
-        };
-        // remove the default top margin for these inline settings buttons
-  saveSettingsBtn.style.marginTop = '0';
-  saveSettingsBtn.classList.add('btn-save');
+        const previewWrap = document.createElement('div'); previewWrap.className = 'preview';
+        const prevImg = document.createElement('img'); prevImg.alt = 'Aperçu fond';
+        const prevText = document.createElement('div'); prevText.style.fontSize = '0.9rem'; prevText.style.color = '#64748b'; prevText.textContent = 'Aucun fond';
+        function updatePreviewSrc(src) {
+          if (!src) { prevImg.src = ''; prevImg.style.display = 'none'; prevText.style.display = 'block'; return; }
+          prevImg.style.display = 'block'; prevText.style.display = 'none'; prevImg.src = src;
+        }
+        if (bgInput.value) updatePreviewSrc(bgInput.value); else updatePreviewSrc('');
+        prevImg.onerror = () => { prevImg.style.display = 'none'; prevText.style.display = 'block'; };
+        previewWrap.appendChild(prevImg); previewWrap.appendChild(prevText);
 
-    const cancelSettingsBtn = document.createElement('button');
-    cancelSettingsBtn.textContent = 'Annuler';
-  cancelSettingsBtn.onclick = () => { renderLinks(); };
-  // remove top margin to keep the settings panel compact
-  cancelSettingsBtn.style.marginTop = '0';
-  cancelSettingsBtn.classList.add('btn-cancel');
+        const controls = document.createElement('div'); controls.className = 'controls';
+        const saveSettingsBtn = document.createElement('button'); saveSettingsBtn.textContent = 'Enregistrer'; saveSettingsBtn.classList.add('btn-save');
+        saveSettingsBtn.onclick = () => { saveSettings(titleInput.value, bgInput.value); };
+        const cancelSettingsBtn = document.createElement('button'); cancelSettingsBtn.textContent = 'Annuler'; cancelSettingsBtn.classList.add('btn-cancel');
+        cancelSettingsBtn.onclick = () => { renderLinks(); };
+        const clearBgBtn = document.createElement('button'); clearBgBtn.textContent = 'Effacer le fond'; clearBgBtn.classList.add('btn-delete');
+        clearBgBtn.onclick = () => { bgInput.value = ''; updatePreviewSrc(''); };
+        controls.appendChild(saveSettingsBtn); controls.appendChild(cancelSettingsBtn); controls.appendChild(clearBgBtn);
 
-        settings.appendChild(titleInput);
-        settings.appendChild(bgInput);
-        settings.appendChild(saveSettingsBtn);
-        settings.appendChild(cancelSettingsBtn);
+        bgInput.addEventListener('input', () => { updatePreviewSrc(bgInput.value || ''); });
+
+        settings.appendChild(fieldTitle);
+        const rightCol = document.createElement('div'); rightCol.style.display = 'flex'; rightCol.style.flexDirection = 'column'; rightCol.style.alignItems = 'center'; rightCol.style.gap = '8px';
+        rightCol.appendChild(fieldBg); rightCol.appendChild(previewWrap); rightCol.appendChild(controls);
+        settings.appendChild(rightCol);
         container.appendChild(settings);
       }
       const links = getLinks();
