@@ -1,78 +1,412 @@
 <!DOCTYPE html>
- <head>
- 	<meta charset="utf-8">
- 	<title>Favoris</title>
-	<link rel="icon" href="https://www.flaticon.com/svg/vstatic/svg/4236/4236484.svg?token=exp=1620401517~hmac=1911e98fe4d09f6a675ab6cfcdcca5ef"/>
- 	<link rel="shortcut icon" type="image/png" href="data/logo/home.png"/>
- 	<link rel="stylesheet" href="data/style.css" type="text/css" />
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Page d'accueil personnalisée</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #eef2f5;
+      text-align: center;
+      padding-top: 5%;
+    }
+    a {
+      display: inline-block;
+      margin: 10px;
+      padding: 8px 16px;
+      background: white;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #333;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #0078ff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover { background: #005fcc; }
+    /* edit button: fixed bottom-right */
+    #editBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      border-radius: 999px;
+      padding: 12px 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    /* reset button: fixed near edit button, hidden by default and shown in edit mode */
+    #resetBtn {
+      background: #e53935;
+      position: fixed;
+      bottom: 20px;
+      right: 110px;
+      z-index: 1000;
+      display: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+    #resetBtn:hover { background: #b71c1c; }
+    /* background image layer */
+    #bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center;
+      filter: blur(8px) brightness(0.6);
+      transition: background-image 0.3s ease-in-out, opacity 0.3s;
+    }
+    /* ensure main content is above background */
+    body > *:not(#bg) {
+      position: relative;
+      z-index: 1;
+    }
+    /* title contrast helpers */
+    h1.light-title {
+      color: #ffffff;
+      text-shadow: 0 4px 18px rgba(0,0,0,0.7);
+    }
+    h1.dark-title {
+      color: #111111;
+      text-shadow: 0 2px 6px rgba(255,255,255,0.5);
+    }
+    /* Responsive rules for small screens (phones) */
+    @media (max-width: 600px) {
+      body { padding-top: 8%; }
+      h1 { font-size: 1.6rem; margin: 0 12px 12px; }
+
+      /* make link items stack and be easy to tap */
+      .link-item { display: block; margin: 8px auto; }
+      .link-item .link-anchor {
+        display: block !important;
+        width: calc(100% - 40px) !important;
+        margin: 6px auto !important;
+        padding: 12px !important;
+        box-sizing: border-box;
+        text-align: left;
+        word-break: break-word;
+      }
+      .link-item button { margin-left: 6px; margin-top: 6px; padding: 8px 10px; }
+
+      /* settings panel flows vertically on phones */
+      .settings-panel { flex-direction: column !important; align-items: stretch !important; gap: 8px !important; }
+      .settings-panel input { width: calc(100% - 32px) !important; max-width: 560px !important; margin: 0 auto !important; }
+      .settings-panel button { width: auto !important; }
+
+      /* smaller fixed edit/reset buttons */
+      #editBtn { right: 14px; bottom: 14px; padding: 10px 12px; }
+      #resetBtn { right: 84px; bottom: 14px; padding: 8px 10px; }
+
+      /* slightly reduce blur on small devices for performance */
+      #bg { filter: blur(6px) brightness(0.6); }
+    }
+  </style>
 </head>
+<body>
+  <div id="bg"></div>
+  <h1>Ma page d'accueil 🌟</h1>
+  <div id="links"></div>
+  <div>
+    <button id="editBtn" onclick="toggleEditMode()">Personnaliser</button>
+    <button onclick="resetStorage()" id="resetBtn">Réinitialiser</button>
+  </div>
 
- <body style="background-image: url(data/couleur.jpg); background-attachment:fixed; background-size: 120%; background-repeat: no-repeat; background-position: center; background-color: #22056A; vertical-align: center; ">
+  <script>
+    const defaultLinks = [
+      { name: "Google", url: "https://www.google.com" },
+      { name: "YouTube", url: "https://www.youtube.com" },
+      { name: "LinkedIn", url: "https://www.linkedin.com" }
+    ];
 
-	<div style="height:125px"></div> 
+    function getLinks() {
+      return JSON.parse(localStorage.getItem("links")) || defaultLinks;
+    }
 
+    let editMode = false;
 
-	<table  cellpadding="70" align="center" id="blanco">
-		<tr style="text-align: center;">
-			<td>
-				<div style="text-align: center;"  class="zomm">
- 					<a href="https://www.notion.so//" target="_blank" ><img src="data/logo/edit.png" style="width:100px; height:100px;"></a>
-					<h3>
-						Notion
-					</h3>
-				</div>
-			</td>
-			<td>
-				<div style="text-align: center;" class="zomm">
-					<a href="https://mail.google.com/mail/" target="_blank"><img src="data/logo/envelope.png" style="width:100px; height:100px;"></a>
-				<h3>
-					Mail
-				</h3>
-				</div>
-			</td>
-			<td>
-				<div style="text-align: center;" class="zomm">
- 				<a href="https://georges-clemenceau.mon-ent-occitanie.fr/" target="_blank" ><img src="data/logo/school.png" style="width:100px; height:100px;"   ></a>
-				<h3>
-					ENT
-				</h3>
-				</div>
-			</td>
-			<td>
-				<div style="text-align: center;" class="zomm">
- 				<a href="https://drive.google.com/drive/" target="_blank" ><img src="data/logo/triangle.png" style="width:100px; height:100px;"   ></a>
-				<h3>
-					Drive
-				</h3>
-				</div>
-			</td>
-			<td>
-				<div style="text-align: center;" class="zomm">
- 				<a href="https://www.tam-voyages.com/ri/?rub_code=4&laction=backForm&comDep=34270&pointDep=5760%24Saint%2DJean+de+V%C3%A9das+Centre%244%2434270&numDep=0&comArr=34172&pointArr=5629%24Rondelet%244%2434172&numArr=0&laDate=03%2F09%2F2020&keywordsDep=Saint%2DJean+de+V%C3%A9das+Centre+%28Arr%C3%AAt%29+%2D+ST+JEAN+DE+VEDAS&bikeDistance=10&walkDistance=2000&noscript=0&laMinute=00&critereRI=2&typeDate=65&lHeure=09&carDistance=20&search=Lancer+la+recherche" target="_blank" ><img src="data/logo/train.png" style="width:100px; height:100px;"   ></a>
-				<h3>
-					Tram
-				</h3>
-			</td>
-		</tr>
-	</table>
+    // Apply saved settings (title, background) on load
+    function loadSettings() {
+      const storedTitle = localStorage.getItem('pageTitle');
+      if (storedTitle) {
+        document.title = storedTitle;
+        const h = document.querySelector('h1');
+        if (h) h.textContent = storedTitle;
+      }
+      const bg = localStorage.getItem('bgImage');
+      if (bg) applyBackground(bg);
+      else updateTitleContrast(null);
+    }
 
-	<br><br>
+    // Estimate image brightness by drawing it to a small canvas.
+    // If cross-origin blocks canvas readback, fallback to conservative choice.
+    function analyzeImageBrightness(url, cb) {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const w = 40, h = 30;
+          canvas.width = w; canvas.height = h;
+          ctx.drawImage(img, 0, 0, w, h);
+          const data = ctx.getImageData(0, 0, w, h).data;
+          let r=0,g=0,b=0,count=0;
+          for (let i=0;i<data.length;i+=4) {
+            r += data[i]; g += data[i+1]; b += data[i+2]; count++;
+          }
+          r = r/count; g = g/count; b = b/count;
+          const lum = 0.299*r + 0.587*g + 0.114*b;
+          cb(null, lum);
+        } catch (err) {
+          cb(err);
+        }
+      };
+      img.onerror = () => cb(new Error('image load error'));
+      img.src = url + ((url.indexOf('?')>-1)?'&':'?') + 'cachebust=' + Date.now();
+    }
 
-	<table cellpadding="20" align="center" id="blanco2">
-		<tr>
-			<td>
-				<div style="text-align: center;" class="zomm2">
- 				<a href="https://www.google.com" target="_blank"><img src="data/logo/search.png" class="img2" style="width:90px; height:90px;" ></a>
- 				</div>
-			</td>
-			<td>
-				<div style="text-align: center;" class="zomm2">
- 				<a href="page2.html"><img src="data/logo/add.png" class="img2" style="width:90px; height:90px;" ></a>
- 				</div>
-			</td>
-		</tr>
-	</table>
+    function updateTitleContrast(bgUrl) {
+      const h = document.querySelector('h1');
+      if (!h) return;
+      h.classList.remove('light-title','dark-title');
+      if (!bgUrl) { h.classList.add('dark-title'); return; }
+      analyzeImageBrightness(bgUrl, (err, lum) => {
+        if (err || lum === undefined) { h.classList.add('dark-title'); return; }
+        if (lum < 130) h.classList.add('light-title'); else h.classList.add('dark-title');
+      });
+    }
 
-	
-	<div style="height:15px"></div> 
- </body>
+    function saveSettings(title, bgUrl) {
+      if (title !== undefined) {
+        localStorage.setItem('pageTitle', title);
+        document.title = title;
+        const h = document.querySelector('h1');
+        if (h) h.textContent = title;
+      }
+      if (bgUrl !== undefined) {
+        // validate image first
+        if (!bgUrl) {
+          // clear background
+          localStorage.removeItem('bgImage');
+          applyBackground(null);
+          return;
+        }
+        const img = new Image();
+        img.onload = () => {
+          localStorage.setItem('bgImage', bgUrl);
+          applyBackground(bgUrl);
+        };
+        img.onerror = () => {
+          alert('Impossible de charger l\'image de fond. Vérifie l\'URL.');
+        };
+        img.src = bgUrl;
+      }
+    }
+
+    function applyBackground(url) {
+      const bgDiv = document.getElementById('bg');
+      if (!bgDiv) return;
+      if (!url) {
+        bgDiv.style.backgroundImage = 'none';
+        document.body.style.background = '#eef2f5';
+        updateTitleContrast(null);
+        return;
+      }
+      bgDiv.style.backgroundImage = `url(${url})`;
+      bgDiv.style.backgroundSize = 'cover';
+      bgDiv.style.backgroundPosition = 'center';
+      // dim and blur are handled by CSS filter
+      document.body.style.background = 'transparent';
+      updateTitleContrast(url);
+    }
+
+    function renderLinks() {
+      const container = document.getElementById("links");
+      container.innerHTML = "";
+      // If in edit mode, show settings panel for title and background
+      if (editMode) {
+        const settings = document.createElement('div');
+        settings.className = 'settings-panel';
+        settings.style.marginBottom = '12px';
+        settings.style.display = 'flex';
+        settings.style.justifyContent = 'center';
+        settings.style.gap = '8px';
+
+        const titleInput = document.createElement('input');
+        titleInput.placeholder = 'Titre de la page';
+        titleInput.value = localStorage.getItem('pageTitle') || document.querySelector('h1').textContent || '';
+        titleInput.style.width = '260px';
+
+        const bgInput = document.createElement('input');
+        bgInput.placeholder = 'URL de l\'image de fond (laisser vide pour effacer)';
+        bgInput.value = localStorage.getItem('bgImage') || '';
+        bgInput.style.width = '360px';
+
+        const saveSettingsBtn = document.createElement('button');
+        saveSettingsBtn.textContent = 'Enregistrer paramètres';
+        saveSettingsBtn.onclick = () => {
+          saveSettings(titleInput.value, bgInput.value);
+        };
+
+        const cancelSettingsBtn = document.createElement('button');
+        cancelSettingsBtn.textContent = 'Annuler';
+        cancelSettingsBtn.onclick = () => { renderLinks(); };
+
+        settings.appendChild(titleInput);
+        settings.appendChild(bgInput);
+        settings.appendChild(saveSettingsBtn);
+        settings.appendChild(cancelSettingsBtn);
+        container.appendChild(settings);
+      }
+      const links = getLinks();
+      links.forEach((link, idx) => {
+       const item = document.createElement('div');
+       item.className = 'link-item';
+        item.style.display = 'inline-block';
+        item.style.position = 'relative';
+        item.style.margin = '6px';
+
+        const a = document.createElement("a");
+        a.className = 'link-anchor';
+        a.href = link.url;
+        a.textContent = link.name || link.url;
+        a.style.cursor = 'pointer';
+        a.style.padding = '8px 12px';
+        a.style.display = 'inline-block';
+
+        if (editMode) {
+          // prevent navigation in edit mode; clicking edits
+          a.addEventListener('click', (e) => { e.preventDefault(); editLink(idx); });
+        } else {
+          a.target = '_blank';
+        }
+
+        item.appendChild(a);
+
+        if (editMode) {
+          const editBtn = document.createElement('button');
+          editBtn.textContent = '✎';
+          editBtn.title = 'Modifier';
+          editBtn.style.marginLeft = '6px';
+          editBtn.onclick = () => editLink(idx);
+          item.appendChild(editBtn);
+
+          const delBtn = document.createElement('button');
+          delBtn.textContent = '🗑';
+          delBtn.title = 'Supprimer';
+          delBtn.style.marginLeft = '4px';
+          delBtn.onclick = () => { removeLink(idx); };
+          item.appendChild(delBtn);
+        }
+
+        container.appendChild(item);
+      });
+
+      if (editMode) {
+        const add = document.createElement('div');
+        add.style.marginTop = '12px';
+        const addBtn = document.createElement('button');
+        addBtn.textContent = 'Ajouter un lien';
+        addBtn.onclick = addLink;
+        add.appendChild(addBtn);
+        container.appendChild(add);
+      }
+    }
+
+    function toggleEditMode() {
+      editMode = !editMode;
+      document.getElementById('editBtn').textContent = editMode ? 'Terminer' : 'Personnaliser';
+      // show/hide reset button depending on edit mode
+      const reset = document.getElementById('resetBtn');
+      if (reset) reset.style.display = editMode ? 'inline-block' : 'none';
+      renderLinks();
+    }
+
+    function editLink(index) {
+      const links = getLinks();
+      const container = document.getElementById('links');
+      // replace the specific item with an edit form
+      const items = Array.from(container.children).filter(n => n.nodeType === 1);
+      const target = items[index];
+      if (!target) return;
+
+      const form = document.createElement('div');
+      form.style.display = 'inline-block';
+      form.style.padding = '8px';
+      form.style.background = '#fff';
+      form.style.borderRadius = '6px';
+      form.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+
+      const nameInput = document.createElement('input');
+      nameInput.value = links[index]?.name || '';
+      nameInput.placeholder = 'Nom';
+      nameInput.style.marginRight = '6px';
+
+      const urlInput = document.createElement('input');
+      urlInput.value = links[index]?.url || 'https://';
+      urlInput.placeholder = 'https://...';
+      urlInput.style.marginRight = '6px';
+      urlInput.style.width = '220px';
+
+      const saveBtn = document.createElement('button');
+      saveBtn.textContent = 'Enregistrer';
+      saveBtn.onclick = () => {
+        links[index] = { name: nameInput.value || urlInput.value, url: urlInput.value };
+        localStorage.setItem('links', JSON.stringify(links));
+        renderLinks();
+      };
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.textContent = 'Annuler';
+      cancelBtn.style.marginLeft = '6px';
+      cancelBtn.onclick = () => { renderLinks(); };
+
+      form.appendChild(nameInput);
+      form.appendChild(urlInput);
+      form.appendChild(saveBtn);
+      form.appendChild(cancelBtn);
+
+      target.replaceWith(form);
+      nameInput.focus();
+    }
+
+    function addLink() {
+      const links = getLinks();
+      links.push({ name: '', url: 'https://' });
+      localStorage.setItem('links', JSON.stringify(links));
+      renderLinks();
+      // open editor for the new last item
+      setTimeout(() => editLink(links.length - 1), 50);
+    }
+
+    function removeLink(index) {
+      const links = getLinks();
+      links.splice(index, 1);
+      localStorage.setItem('links', JSON.stringify(links));
+      renderLinks();
+    }
+
+    function resetStorage() {
+      const ok = confirm("Voulez-vous vraiment réinitialiser les liens enregistrés ? Cela restaurera les valeurs par défaut.");
+      if (!ok) return;
+      localStorage.removeItem("links");
+      renderLinks();
+      alert("Les liens ont été réinitialisés aux valeurs par défaut.");
+    }
+
+    loadSettings();
+    renderLinks();
+  </script>
+</body>
+</html>
