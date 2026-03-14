@@ -1,6 +1,8 @@
 # 🌐 Favoris — Page de raccourcis personnalisable
 
-**URL publique :** [https://azor9.github.io/Favoris/](https://azor9.github.io/Favoris/) <br>
+**URL publique :** [https://favoris.hugo-lembrez.fr/](https://favoris.hugo-lembrez.fr/) <br>
+**Contact :** contact@hugo-lembrez.fr <br>
+**Hebergement :** GitHub Pages
 **Fichier unique :** `index.html`
 
 ---
@@ -17,6 +19,7 @@ Tout est contenu dans un seul fichier HTML.
 * 🧭 **Titre de page et image de fond** personnalisables (avec flou et vérification de chargement)
 * 🔄 **Réinitialisation** des liens à l’état par défaut
 * 📱 **Responsive** : adapté aux mobiles et au tactile
+* ⚖️ **Mentions légales** accessibles via un bouton en bas de page (popup intégrée)
 
 
 ---
@@ -87,6 +90,17 @@ Chaque lien est enregistré sous forme d’objet dans `links` :
   * Un message s’affiche sous le titre quand l’appareil est déconnecté.
   * Si hors-ligne, les redirections web sont désactivées.
 * **Légèreté :** aucun build, tout le code est dans `index.html`.
+
+---
+
+## ⚖️ Mentions légales
+
+Depuis la page d'accueil, le bouton **"Mentions légales"** (en bas de page) ouvre une popup qui contient :
+
+* l'éditeur du site
+* l'URL officielle
+* le contact
+* l'information d'hébergement GitHub Pages
 
 ---
 

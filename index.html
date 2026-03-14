@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Page d'accueil personnalisée</title>
+  <title>Favoris - Page d'accueil personnalisée</title>
+  <meta name="description" content="Page de raccourcis personnalisable, hebergee sur GitHub Pages, avec gestion locale des favoris.">
+  <link rel="canonical" href="https://favoris.hugo-lembrez.fr/">
   <style>
     
   *, *::before, *::after { box-sizing: border-box; }
@@ -12,6 +14,7 @@
       background: #eef2f5;
       text-align: center;
       padding-top: 5%;
+      padding-bottom: 96px;
     }
     a {
       display: inline-block;
@@ -236,6 +239,66 @@
   .network-status.hidden { visibility: hidden; }
     .network-status.offline { color: #7f1d1d; background: rgba(183,28,28,0.06); border: 1px solid rgba(183,28,28,0.12); }
     .network-status.online { color: #065f46; background: rgba(6,95,70,0.06); border: 1px solid rgba(6,95,70,0.12); }
+
+  .site-footer {
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    z-index: 1000;
+  }
+  #legalBtn {
+    background: rgba(255,255,255,0.88);
+    color: #111827;
+    border: 1px solid rgba(255,255,255,0.95);
+    box-shadow: 0 4px 10px rgba(2,6,23,0.12);
+    backdrop-filter: blur(6px) saturate(115%);
+    -webkit-backdrop-filter: blur(6px) saturate(115%);
+  }
+  #legalBtn:hover { background: rgba(255,255,255,0.98); }
+
+  .legal-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1200;
+    background: rgba(15,23,42,0.54);
+  }
+  .legal-modal.open { display: flex; }
+  .legal-modal-content {
+    width: min(760px, 100%);
+    max-height: 86vh;
+    overflow: auto;
+    text-align: left;
+    background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(255,255,255,0.9);
+    border-radius: 14px;
+    box-shadow: 0 16px 45px rgba(15,23,42,0.28);
+    padding: 18px 18px 14px;
+  }
+  .legal-modal-content h2 { margin-top: 4px; }
+  .legal-modal-content p { color: #1f2937; line-height: 1.52; margin: 8px 0; }
+  .legal-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+
+  @media (max-width: 600px) {
+    .site-footer { left: 12px; bottom: 12px; }
+    .legal-modal { padding: 12px; }
+    .legal-modal-content { max-height: 88vh; border-radius: 12px; }
+  }
+
+  @media (max-width: 420px) {
+    .site-footer {
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 120px;
+    }
+  }
   </style>
 </head>
 <body>
@@ -250,6 +313,28 @@
     <input id="importInput" type="file" accept="application/json" style="display:none" />
     <button onclick="resetStorage()" id="resetBtn">Réinitialiser</button>
   </div>
+
+  <footer class="site-footer">
+    <button id="legalBtn" type="button" aria-haspopup="dialog" aria-controls="legalModal" aria-expanded="false">Mentions legales</button>
+  </footer>
+
+  <div id="legalModal" class="legal-modal" role="dialog" aria-modal="true" aria-labelledby="legalTitle" aria-hidden="true">
+    <div class="legal-modal-content" role="document">
+      <h2 id="legalTitle">Mentions legales</h2>
+      <p><strong>Editeur du site :</strong> Hugo Lembrez.</p>
+      <p><strong>URL officielle :</strong> https://favoris.hugo-lembrez.fr/</p>
+      <p><strong>Contact :</strong> contact@hugo-lembrez.fr</p>
+      <p><strong>Hebergement :</strong> GitHub Pages (service d'hebergement web de GitHub).</p>
+      <p><strong>Finalite :</strong> cette application permet de gerer et personnaliser une liste de raccourcis.</p>
+      <p><strong>Donnees :</strong> les donnees de personnalisation sont stockees localement dans votre navigateur (localStorage) et ne sont pas envoyees a un serveur par defaut.</p>
+      <p><strong>Responsabilite :</strong> l'utilisateur reste responsable des liens ajoutes et de leur usage.</p>
+      <div class="legal-actions">
+        <button id="closeLegalBtn" type="button" class="btn-cancel">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <noscript>Cette page a besoin de JavaScript pour fonctionner correctement.</noscript>
 
   <script>
     const defaultLinks = [
@@ -628,6 +713,41 @@
           e.target.value = '';
         };
       }
+
+      const legalBtn = document.getElementById('legalBtn');
+      const closeLegalBtn = document.getElementById('closeLegalBtn');
+      const legalModal = document.getElementById('legalModal');
+
+      function closeLegalModal() {
+        if (!legalModal || !legalBtn) return;
+        legalModal.classList.remove('open');
+        legalModal.setAttribute('aria-hidden', 'true');
+        legalBtn.setAttribute('aria-expanded', 'false');
+        legalBtn.focus();
+      }
+
+      function openLegalModal() {
+        if (!legalModal || !legalBtn) return;
+        legalModal.classList.add('open');
+        legalModal.setAttribute('aria-hidden', 'false');
+        legalBtn.setAttribute('aria-expanded', 'true');
+        const closeBtn = document.getElementById('closeLegalBtn');
+        if (closeBtn) closeBtn.focus();
+      }
+
+      if (legalBtn && legalModal) {
+        legalBtn.addEventListener('click', openLegalModal);
+        legalModal.addEventListener('click', (e) => {
+          if (e.target === legalModal) closeLegalModal();
+        });
+      }
+      if (closeLegalBtn) closeLegalBtn.addEventListener('click', closeLegalModal);
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && legalModal && legalModal.classList.contains('open')) {
+          closeLegalModal();
+        }
+      });
     });
 
     function toggleEditMode() {
