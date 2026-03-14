@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -6,894 +6,602 @@
   <title>Favoris - Page d'accueil personnalisée</title>
   <meta name="description" content="Page de raccourcis personnalisable, hebergee sur GitHub Pages, avec gestion locale des favoris.">
   <link rel="canonical" href="https://favoris.hugo-lembrez.fr/">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <style>
-    
-  *, *::before, *::after { box-sizing: border-box; }
-    body {
-      font-family: sans-serif;
-      background: #eef2f5;
-      text-align: center;
-      padding-top: 5%;
-      padding-bottom: 96px;
-    }
-    a {
-      display: inline-block;
-      margin: 10px;
-      padding: 8px 16px;
-      background: white;
-      border-radius: 8px;
-      text-decoration: none;
-      color: #333;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      background: #0078ff;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover { background: #005fcc; }
-  .btn-save { background: #16a34a; color: #fff; }
-  .btn-save:hover { background: #15803d; }
-  .btn-cancel { background: #6b7280; color: #fff; }
-  .btn-cancel:hover { background: #4b5563; }
-  .btn-delete { background: #e53935; color: #fff; }
-  .btn-delete:hover { background: #b71c1c; }
-  #editBtn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 1000;
-      border-radius: 999px;
-      padding: 12px 16px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    :root {
+      --hero-overlay: linear-gradient(140deg, rgba(14, 165, 233, 0.28), rgba(236, 72, 153, 0.2), rgba(16, 185, 129, 0.2));
+      --glass: rgba(255, 255, 255, 0.28);
+      --glass-strong: rgba(255, 255, 255, 0.38);
+      --glass-stroke: rgba(255, 255, 255, 0.45);
+      --shadow-soft: 0 14px 36px rgba(15, 23, 42, 0.2);
+      --shadow-card: 0 10px 30px rgba(2, 6, 23, 0.14);
+
+      --bs-primary: #0f766e;
+      --bs-primary-rgb: 15, 118, 110;
+      --bs-success: #10b981;
+      --bs-success-rgb: 16, 185, 129;
+      --bs-body-color: #0f172a;
+
+      --bs-border-radius: 1rem;
+      --bs-border-radius-sm: 0.85rem;
+      --bs-border-radius-lg: 1.15rem;
+      --bs-border-radius-xl: 1.35rem;
+      --bs-border-radius-xxl: 1.6rem;
     }
 
-  #resetBtn {
-      background: #e53935;
-      position: fixed;
-      bottom: 20px;
-      right: 110px;
-      z-index: 1000;
-      display: none;
-      border-radius: 8px;
-      padding: 10px 14px;
+    body {
+      min-height: 100vh;
+      background: #dbeafe;
     }
-    #resetBtn:hover { background: #b71c1c; }
-  #bg {
+
+    #bg {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      inset: 0;
       z-index: 0;
-      background-repeat: no-repeat;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(125, 211, 252, 0.95) 0%, rgba(125, 211, 252, 0) 40%),
+        radial-gradient(circle at 86% 12%, rgba(244, 114, 182, 0.65) 0%, rgba(244, 114, 182, 0) 35%),
+        radial-gradient(circle at 50% 88%, rgba(52, 211, 153, 0.62) 0%, rgba(52, 211, 153, 0) 40%),
+        linear-gradient(155deg, #cffafe 0%, #bfdbfe 44%, #e9d5ff 100%);
       background-size: cover;
       background-position: center;
-      filter: blur(8px) brightness(0.6);
-      transition: background-image 0.3s ease-in-out, opacity 0.3s;
+      filter: blur(8px) brightness(0.92);
+      transform: scale(1.04);
     }
-  body > *:not(#bg) {
+
+    #bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--hero-overlay);
+    }
+
+    .app-layer {
       position: relative;
       z-index: 1;
     }
 
-  :root {
-      --glass-blur: 6px;
-      --glass-blur-sm: 3px;
-      --glass-white: 255,255,255;
-      --glass-opacity-default: 0.8;
-      --glass-opacity-field: 0.86;
-      --glass-radius-default: 8px;
-      --glass-shadow: 0 4px 10px rgba(2,6,23,0.04);
+    .hero-card,
+    .shortcut-card,
+    .settings-card {
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      background: var(--glass);
+      border: 1px solid var(--glass-stroke);
+      border-radius: var(--bs-border-radius-xxl);
+      box-shadow: var(--shadow-soft);
     }
 
-  .settings-panel .field,
-    body.editing .link-item,
-    .link-anchor {
-      background: rgba(var(--glass-white), var(--glass-opacity-default));
-      border-radius: var(--glass-radius-default);
-      border: 1px solid rgba(255,255,255,0.85);
-      box-shadow: var(--glass-shadow);
-      backdrop-filter: blur(var(--glass-blur)) saturate(110%);
-      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(110%);
+    .hero-card {
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0.24));
     }
-  h1.light-title {
-      color: #ffffff;
-      text-shadow: 0 4px 18px rgba(0,0,0,0.7);
-    }
-    h1.dark-title {
-      color: #111111;
-      text-shadow: 0 2px 6px rgba(255,255,255,0.5);
-    }
-  .settings-panel { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; }
-  .settings-panel {
-    max-width: 880px;
-    margin: 12px auto 18px;
-    padding: 14px;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .settings-panel .field {
-    display:flex;
-    flex-direction:column;
-    align-items:flex-start;
-    gap:6px;
-    min-width:200px;
-    padding: 8px 10px;
-    background: rgba(var(--glass-white), var(--glass-opacity-field));
-    border: 1px solid rgba(255,255,255,0.9);
-  }
 
-  @media (max-width: 600px) {
-    .settings-panel .field {
-      backdrop-filter: blur(4px) saturate(105%);
-      -webkit-backdrop-filter: blur(4px) saturate(105%);
-      padding: 6px 8px;
+    .shortcut-link {
+      min-height: 62px;
+      border-radius: 1rem;
+      background: var(--glass-strong);
+      border-color: rgba(255, 255, 255, 0.65);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+      transition: transform 0.18s ease, box-shadow 0.2s ease, background-color 0.2s ease;
     }
-  }
-  .settings-panel label { font-size: 0.85rem; color: #334155; }
-  .settings-panel input[type="text"], .settings-panel input[type="url"] { padding: 10px 12px; border-radius:8px; border:1px solid rgba(16,24,40,0.08); background: #fff; color: #111; min-width: 220px; }
-  .settings-panel .controls { display:flex; gap:8px; align-items:center; }
-  .settings-panel .preview { width: 120px; height: 68px; border-radius:8px; overflow:hidden; border:1px solid rgba(0,0,0,0.06); background:#f6f7f9; display:flex; align-items:center; justify-content:center; }
-  .settings-panel .preview img { width:100%; height:100%; object-fit:cover; display:block; }
-  body.editing .link-item {
-    border-radius: 10px;
-    padding: 6px;
-    /* slightly different border for the item card */
-    border: 1px solid rgba(255,255,255,0.85);
-  }
 
-  @media (max-width: 600px) {
-    body.editing .link-item {
-      backdrop-filter: blur(4px) saturate(105%);
-      -webkit-backdrop-filter: blur(4px) saturate(105%);
+    .shortcut-link:hover,
+    .shortcut-link:focus-visible {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-card);
+      background: rgba(255, 255, 255, 0.52);
     }
-  }
-  input { padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; min-width: 120px; max-width: 720px; }
-    input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,120,255,0.12); }
-    button { font-size: 14px; }
-  .link-item { display: inline-flex; align-items: center; gap: 6px; position: relative; margin: 6px; }
-  .link-anchor {
-    cursor: pointer;
-    padding: 8px 12px;
-    display: inline-block;
-    position: relative;
-  }
-  .app-badge { display: inline-block; margin-left: 6px; font-size: 0.95em; }
-  .link-icon { width: 20px; height: 20px; display: inline-block; margin-right: 8px; vertical-align: middle; }
-  .link-icon img { width: 100%; height: 100%; display: block; }
-    /* Responsive rules for small screens (phones) */
-    @media (max-width: 600px) {
-      body { padding-top: 8%; text-align: center; }
-      h1 { font-size: 1.6rem; margin: 0 12px 12px; }
 
-      /* make the links container a vertical list on small screens */
-      #links { display: flex; flex-direction: column; align-items: center; padding: 0 12px; }
+    .shortcut-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
 
-      /* make link items stack and be easy to tap */
-      .link-item { display: block; width: 100%; max-width: 560px; margin: 8px auto; }
-      .link-item .link-anchor {
-        display: block !important;
-        width: 100% !important;
-        margin: 6px 0 !important;
-        padding: 12px 48px 12px 12px !important; /* add right padding to make room for badge */
-        box-sizing: border-box;
-        text-align: left;
-        word-break: break-word;
+    .floating-cta {
+      position: fixed;
+      right: 12px;
+      bottom: 12px;
+      z-index: 1031;
+    }
+
+    .floating-cta .btn {
+      border-radius: 999px;
+      box-shadow: 0 14px 36px rgba(2, 6, 23, 0.24);
+      padding-inline: 1rem;
+    }
+
+    .btn,
+    .form-control,
+    .modal-content,
+    .alert,
+    .badge {
+      border-radius: 1rem;
+    }
+
+    .btn-primary,
+    .btn-success {
+      border: 0;
+      box-shadow: 0 8px 24px rgba(15, 118, 110, 0.32);
+    }
+
+    .btn-outline-primary,
+    .btn-outline-secondary,
+    .btn-outline-danger,
+    .btn-outline-dark {
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .form-control {
+      background: rgba(255, 255, 255, 0.62);
+      border-color: rgba(255, 255, 255, 0.72);
+    }
+
+    .form-control:focus {
+      background: rgba(255, 255, 255, 0.8);
+      border-color: rgba(15, 118, 110, 0.45);
+      box-shadow: 0 0 0 0.2rem rgba(15, 118, 110, 0.18);
+    }
+
+    .modal-content {
+      border: 1px solid rgba(255, 255, 255, 0.56);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.54));
+      backdrop-filter: blur(18px) saturate(135%);
+      -webkit-backdrop-filter: blur(18px) saturate(135%);
+      box-shadow: var(--shadow-soft);
+    }
+
+    @media (min-width: 768px) {
+      .floating-cta {
+        right: 20px;
+        bottom: 20px;
       }
-      /* position the badge to the right of the link on small screens */
-      .link-item .app-badge { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); }
-  .link-item button { margin-left: 6px; margin-top: 6px; padding: 8px 10px; }
-
-      /* settings panel flows vertically on phones */
-  .settings-panel { flex-direction: column !important; align-items: stretch !important; gap: 8px !important; }
-  .settings-panel input { width: calc(100% - 32px) !important; max-width: 560px !important; margin: 0 auto !important; }
-      .settings-panel button { width: auto !important; }
-
-      /* smaller fixed edit/reset buttons */
-      #editBtn { right: 14px; bottom: 14px; padding: 10px 12px; }
-      #resetBtn { right: 84px; bottom: 14px; padding: 8px 10px; }
-  /* hide bottom export/import controls on small screens (we render them below the add button) */
-  #exportBtn, #importBtn { display: none !important; }
-
-      /* slightly reduce blur on small devices for performance */
-      #bg { filter: blur(6px) brightness(0.6); }
-      /* when in edit mode, add padding under links so fixed buttons don't overlap content */
-      body.editing #links { padding-bottom: 220px; }
     }
-    /* Extra adjustments for very small screens to avoid overlap */
-    @media (max-width: 420px) {
-      #editBtn {
-        left: 50%;
-        right: auto;
-        transform: translateX(-50%);
-        bottom: 12px;
-        padding: 12px 14px;
-      }
-      #resetBtn {
-        left: 50%;
-        right: auto;
-        transform: translateX(-50%);
-        bottom: 68px;
-        display: none; /* hide by default to save space; it will be shown in edit mode by JS */
-      }
-      /* ensure reset shows in edit mode: JS toggles inline style display; we set a visible size here */
-      .show-reset #resetBtn { display: inline-block !important; }
-      .link-item .link-anchor { font-size: 16px; padding: 14px !important; }
-      /* on very small screens increase bottom padding when editing to avoid overlap */
-      body.editing #links { padding-bottom: 320px; }
-    }
-    .add-link { margin-top: 12px; }
-  /* when not on very small screens keep edit/delete inline with link */
-  .link-item button { margin-top: 0; }
-  /* small move buttons used for reordering */
-  .btn-move { background: #f3f4f6; color: #111; padding: 6px 8px; border-radius: 6px; font-weight: 600; }
-  .btn-move:hover { background: #e5e7eb; }
-  .network-status { margin: 8px auto 0; padding: 8px 12px; border-radius: 8px; max-width: 820px; font-size: 0.95rem; min-height: 44px; }
-  /* keep the space even when hidden to avoid layout shift */
-  .network-status.hidden { visibility: hidden; }
-    .network-status.offline { color: #7f1d1d; background: rgba(183,28,28,0.06); border: 1px solid rgba(183,28,28,0.12); }
-    .network-status.online { color: #065f46; background: rgba(6,95,70,0.06); border: 1px solid rgba(6,95,70,0.12); }
-
-  .site-footer {
-    position: fixed;
-    left: 16px;
-    bottom: 16px;
-    z-index: 1000;
-  }
-  #legalBtn {
-    background: rgba(255,255,255,0.88);
-    color: #111827;
-    border: 1px solid rgba(255,255,255,0.95);
-    box-shadow: 0 4px 10px rgba(2,6,23,0.12);
-    backdrop-filter: blur(6px) saturate(115%);
-    -webkit-backdrop-filter: blur(6px) saturate(115%);
-  }
-  #legalBtn:hover { background: rgba(255,255,255,0.98); }
-
-  .legal-modal {
-    position: fixed;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    z-index: 1200;
-    background: rgba(15,23,42,0.54);
-  }
-  .legal-modal.open { display: flex; }
-  .legal-modal-content {
-    width: min(760px, 100%);
-    max-height: 86vh;
-    overflow: auto;
-    text-align: left;
-    background: rgba(255,255,255,0.95);
-    border: 1px solid rgba(255,255,255,0.9);
-    border-radius: 14px;
-    box-shadow: 0 16px 45px rgba(15,23,42,0.28);
-    padding: 18px 18px 14px;
-  }
-  .legal-modal-content h2 { margin-top: 4px; }
-  .legal-modal-content p { color: #1f2937; line-height: 1.52; margin: 8px 0; }
-  .legal-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 16px;
-  }
-
-  @media (max-width: 600px) {
-    .site-footer { left: 12px; bottom: 12px; }
-    .legal-modal { padding: 12px; }
-    .legal-modal-content { max-height: 88vh; border-radius: 12px; }
-  }
-
-  @media (max-width: 420px) {
-    .site-footer {
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: 120px;
-    }
-  }
   </style>
 </head>
 <body>
-  <div id="bg"></div>
-  <h1>Ma page d'accueil 🌟</h1>
-  <div id="networkStatus" aria-live="polite" class="network-status hidden"></div>
-  <div id="links"></div>
-  <div>
-    <button id="editBtn" onclick="toggleEditMode()">Personnaliser</button>
-    <button id="exportBtn" style="display:none; margin-right:6px;">Exporter (JSON)</button>
-    <button id="importBtn" style="display:none; margin-right:6px;">Importer (JSON)</button>
-    <input id="importInput" type="file" accept="application/json" style="display:none" />
-    <button onclick="resetStorage()" id="resetBtn">Réinitialiser</button>
+  <div id="bg" aria-hidden="true"></div>
+
+  <main class="app-layer container py-3 py-md-4 pb-5">
+    <section class="hero-card card shadow-sm border-0 mb-3 mb-md-4">
+      <div class="card-body p-3 p-md-4">
+        <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+          <div>
+            <h1 id="mainTitle" class="h3 h2-md mb-1">Ma page d'accueil</h1>
+            <p class="text-secondary mb-0">Accede rapidement a tes liens favoris.</p>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <button id="addBtn" type="button" class="btn btn-primary btn-sm d-none">Ajouter un lien</button>
+            <button id="exportBtn" type="button" class="btn btn-outline-primary btn-sm d-none">Exporter</button>
+            <button id="importBtn" type="button" class="btn btn-outline-secondary btn-sm d-none">Importer</button>
+            <button id="resetBtn" type="button" class="btn btn-outline-danger btn-sm d-none">Reinitialiser</button>
+            <button id="legalBtn" type="button" class="btn btn-outline-dark btn-sm d-none" data-bs-toggle="modal" data-bs-target="#legalModal">Mentions legales</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="settingsPanel" class="settings-card card border-0 shadow-sm mb-3 mb-md-4 d-none">
+      <div class="card-body p-3 p-md-4">
+        <h2 class="h5 mb-3">Parametres de la page</h2>
+        <div class="row g-2 g-md-3">
+          <div class="col-12 col-md-6">
+            <label for="titleInput" class="form-label">Titre de la page</label>
+            <input id="titleInput" type="text" class="form-control" placeholder="Titre de la page">
+          </div>
+          <div class="col-12 col-md-6">
+            <label for="bgInput" class="form-label">Image de fond (URL)</label>
+            <input id="bgInput" type="url" class="form-control" placeholder="https://...">
+          </div>
+          <div class="col-12 d-flex flex-wrap gap-2">
+            <button id="saveSettingsBtn" type="button" class="btn btn-success btn-sm">Enregistrer</button>
+            <button id="clearBgBtn" type="button" class="btn btn-outline-danger btn-sm">Effacer le fond</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div id="links" class="row g-2 g-md-3"></div>
+    </section>
+  </main>
+
+  <div class="floating-cta">
+    <button id="toggleSettingsBtn" type="button" class="btn btn-primary">Parametres</button>
   </div>
 
-  <footer class="site-footer">
-    <button id="legalBtn" type="button" aria-haspopup="dialog" aria-controls="legalModal" aria-expanded="false">Mentions legales</button>
-  </footer>
+  <input id="importInput" type="file" accept="application/json" class="d-none">
 
-  <div id="legalModal" class="legal-modal" role="dialog" aria-modal="true" aria-labelledby="legalTitle" aria-hidden="true">
-    <div class="legal-modal-content" role="document">
-      <h2 id="legalTitle">Mentions legales</h2>
-      <p><strong>Editeur du site :</strong> Hugo Lembrez.</p>
-      <p><strong>URL officielle :</strong> https://favoris.hugo-lembrez.fr/</p>
-      <p><strong>Contact :</strong> contact@hugo-lembrez.fr</p>
-      <p><strong>Hebergement :</strong> GitHub Pages (service d'hebergement web de GitHub).</p>
-      <p><strong>Finalite :</strong> cette application permet de gerer et personnaliser une liste de raccourcis.</p>
-      <p><strong>Donnees :</strong> les donnees de personnalisation sont stockees localement dans votre navigateur (localStorage) et ne sont pas envoyees a un serveur par defaut.</p>
-      <p><strong>Responsabilite :</strong> l'utilisateur reste responsable des liens ajoutes et de leur usage.</p>
-      <div class="legal-actions">
-        <button id="closeLegalBtn" type="button" class="btn-cancel">Fermer</button>
+  <div class="modal fade" id="linkModal" tabindex="-1" aria-labelledby="linkModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="linkModalLabel" class="modal-title fs-5">Modifier un lien</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-2">
+            <label for="linkNameInput" class="form-label">Nom</label>
+            <input id="linkNameInput" type="text" class="form-control" placeholder="Nom du lien">
+          </div>
+          <div class="mb-2">
+            <label for="linkUrlInput" class="form-label">URL</label>
+            <input id="linkUrlInput" type="url" class="form-control" placeholder="https://...">
+          </div>
+          <div class="mb-2">
+            <label for="linkAppInput" class="form-label">Lien application (optionnel)</label>
+            <input id="linkAppInput" type="text" class="form-control" placeholder="ex: whatsapp://send">
+          </div>
+          <div class="mb-2">
+            <label for="linkIntentInput" class="form-label">Intent Android (optionnel)</label>
+            <input id="linkIntentInput" type="text" class="form-control" placeholder="intent://...">
+          </div>
+          <div>
+            <label for="linkIconInput" class="form-label">Icone emoji/image (optionnel)</label>
+            <input id="linkIconInput" type="text" class="form-control" placeholder="emoji ou URL image">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="saveLinkBtn" type="button" class="btn btn-primary">Enregistrer</button>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <noscript>Cette page a besoin de JavaScript pour fonctionner correctement.</noscript>
+  <div class="modal fade" id="legalModal" tabindex="-1" aria-labelledby="legalModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="legalModalLabel" class="modal-title fs-5">Mentions legales</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <p><strong>Editeur du site :</strong> Hugo Lembrez.</p>
+          <p><strong>URL officielle :</strong> https://favoris.hugo-lembrez.fr/</p>
+          <p><strong>Contact :</strong> contact@hugo-lembrez.fr</p>
+          <p><strong>Hebergement :</strong> GitHub Pages.</p>
+          <p><strong>Finalite :</strong> Application de raccourcis personnalisables.</p>
+          <p><strong>Donnees :</strong> Les favoris, le titre et le fond sont stockes localement dans le navigateur.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <noscript>
+    <div class="container py-4">
+      <div class="alert alert-warning">Cette application a besoin de JavaScript pour fonctionner.</div>
+    </div>
+  </noscript>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   <script>
     const defaultLinks = [
       { name: "Google", url: "https://www.google.com" },
-  { name: "YouTube", url: "https://www.youtube.com", appUrl: "vnd.youtube://", intent: "intent://www.youtube.com/#Intent;package=com.google.android.youtube;scheme=https;end", icon: "📹" },
-  { name: "LinkedIn", url: "https://www.linkedin.com", appUrl: "linkedin://", intent: "intent://www.linkedin.com/#Intent;package=com.linkedin.android;scheme=https;end", icon: "🔗" },
-      // appUrl examples: these are best-effort and may vary by platform/version
-  { name: "Netflix", url: "https://www.netflix.com", appUrl: "nflx://", intent: "intent://www.netflix.com/#Intent;package=com.netflix.mediaclient;scheme=https;end", icon: "🔴" },
-  { name: "Gmail", url: "https://mail.google.com", appUrl: "googlegmail://", intent: "intent://mail.google.com/#Intent;package=com.google.android.gm;scheme=https;end", icon: "✉️" },
+      { name: "YouTube", url: "https://www.youtube.com", appUrl: "vnd.youtube://", intent: "intent://www.youtube.com/#Intent;package=com.google.android.youtube;scheme=https;end", icon: "📹" },
+      { name: "LinkedIn", url: "https://www.linkedin.com", appUrl: "linkedin://", intent: "intent://www.linkedin.com/#Intent;package=com.linkedin.android;scheme=https;end", icon: "🔗" },
+      { name: "Netflix", url: "https://www.netflix.com", appUrl: "nflx://", intent: "intent://www.netflix.com/#Intent;package=com.netflix.mediaclient;scheme=https;end", icon: "🎬" },
+      { name: "Gmail", url: "https://mail.google.com", appUrl: "googlegmail://", intent: "intent://mail.google.com/#Intent;package=com.google.android.gm;scheme=https;end", icon: "✉️" },
       { name: "WhatsApp", url: "https://web.whatsapp.com/", appUrl: "whatsapp://send", intent: "intent://send/#Intent;package=com.whatsapp;scheme=https;end", icon: "💬" },
       { name: "Drive", url: "https://drive.google.com", appUrl: "googledrive://", intent: "intent://drive.google.com/#Intent;package=com.google.android.apps.docs;scheme=https;end", icon: "📁" }
     ];
 
+    let editMode = false;
+    let currentEditIndex = null;
+
+    const el = {
+      links: document.getElementById('links'),
+      mainTitle: document.getElementById('mainTitle'),
+      settingsPanel: document.getElementById('settingsPanel'),
+      titleInput: document.getElementById('titleInput'),
+      bgInput: document.getElementById('bgInput'),
+      saveSettingsBtn: document.getElementById('saveSettingsBtn'),
+      clearBgBtn: document.getElementById('clearBgBtn'),
+      toggleSettingsBtn: document.getElementById('toggleSettingsBtn'),
+      addBtn: document.getElementById('addBtn'),
+      exportBtn: document.getElementById('exportBtn'),
+      importBtn: document.getElementById('importBtn'),
+      importInput: document.getElementById('importInput'),
+      resetBtn: document.getElementById('resetBtn'),
+      legalBtn: document.getElementById('legalBtn')
+    };
+
+    const linkModalEl = document.getElementById('linkModal');
+    const linkModal = new bootstrap.Modal(linkModalEl);
+    const linkModalLabel = document.getElementById('linkModalLabel');
+    const saveLinkBtn = document.getElementById('saveLinkBtn');
+    const linkNameInput = document.getElementById('linkNameInput');
+    const linkUrlInput = document.getElementById('linkUrlInput');
+    const linkAppInput = document.getElementById('linkAppInput');
+    const linkIntentInput = document.getElementById('linkIntentInput');
+    const linkIconInput = document.getElementById('linkIconInput');
 
     function getLinks() {
-      return JSON.parse(localStorage.getItem("links")) || defaultLinks;
+      return JSON.parse(localStorage.getItem('links')) || defaultLinks;
     }
 
-    let editMode = false;
-
-    // Apply saved settings (title, background) on load
-    function loadSettings() {
-      const storedTitle = localStorage.getItem('pageTitle');
-      if (storedTitle) {
-        document.title = storedTitle;
-        const h = document.querySelector('h1');
-        if (h) h.textContent = storedTitle;
-      }
-      const bg = localStorage.getItem('bgImage');
-      if (bg) applyBackground(bg);
-      else updateTitleContrast(null);
+    function setLinks(links) {
+      localStorage.setItem('links', JSON.stringify(links));
     }
 
-    // Estimate image brightness by drawing it to a small canvas.
-    // If cross-origin blocks canvas readback, fallback to conservative choice.
-    function analyzeImageBrightness(url, cb) {
-      const img = new Image();
-      img.crossOrigin = 'Anonymous';
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          const w = 40, h = 30;
-          canvas.width = w; canvas.height = h;
-          ctx.drawImage(img, 0, 0, w, h);
-          const data = ctx.getImageData(0, 0, w, h).data;
-          let r=0,g=0,b=0,count=0;
-          for (let i=0;i<data.length;i+=4) {
-            r += data[i]; g += data[i+1]; b += data[i+2]; count++;
-          }
-          r = r/count; g = g/count; b = b/count;
-          const lum = 0.299*r + 0.587*g + 0.114*b;
-          cb(null, lum);
-        } catch (err) {
-          cb(err);
-        }
-      };
-      img.onerror = () => cb(new Error('image load error'));
-      img.src = url + ((url.indexOf('?')>-1)?'&':'?') + 'cachebust=' + Date.now();
-    }
-
-    function updateTitleContrast(bgUrl) {
-      const h = document.querySelector('h1');
-      if (!h) return;
-      h.classList.remove('light-title','dark-title');
-      if (!bgUrl) { h.classList.add('dark-title'); return; }
-      analyzeImageBrightness(bgUrl, (err, lum) => {
-        // If brightness analysis fails (often due to CORS), assume a darker background
-        // and use a light title for better contrast. If analysis works, decide by lum.
-        if (err || lum === undefined) { h.classList.add('light-title'); return; }
-        if (lum < 130) h.classList.add('light-title'); else h.classList.add('dark-title');
-      });
-    }
-
-    function saveSettings(title, bgUrl) {
-      if (title !== undefined) {
-        localStorage.setItem('pageTitle', title);
-        document.title = title;
-        const h = document.querySelector('h1');
-        if (h) h.textContent = title;
-      }
-      if (bgUrl !== undefined) {
-        // validate image first
-        if (!bgUrl) {
-          // clear background
-          localStorage.removeItem('bgImage');
-          applyBackground(null);
-          return;
-        }
-        const img = new Image();
-        img.onload = () => {
-          localStorage.setItem('bgImage', bgUrl);
-          applyBackground(bgUrl);
-        };
-        img.onerror = () => {
-          alert('Impossible de charger l\'image de fond. Vérifie l\'URL.');
-        };
-        img.src = bgUrl;
-      }
+    function sanitizeUrl(url) {
+      const raw = (url || '').trim();
+      if (!raw) return '';
+      if (/^https?:\/\//i.test(raw)) return raw;
+      return 'https://' + raw;
     }
 
     function applyBackground(url) {
-      const bgDiv = document.getElementById('bg');
-      if (!bgDiv) return;
+      const bg = document.getElementById('bg');
       if (!url) {
-        bgDiv.style.backgroundImage = 'none';
-        document.body.style.background = '#eef2f5';
-        updateTitleContrast(null);
+        bg.style.backgroundImage = '';
         return;
       }
-      bgDiv.style.backgroundImage = `url(${url})`;
-      bgDiv.style.backgroundSize = 'cover';
-      bgDiv.style.backgroundPosition = 'center';
-      // dim and blur are handled by CSS filter
-      document.body.style.background = 'transparent';
-      updateTitleContrast(url);
+      bg.style.backgroundImage = 'url(' + url + ')';
+      bg.style.backgroundSize = 'cover';
+      bg.style.backgroundPosition = 'center';
     }
 
-    function renderLinks() {
-      const container = document.getElementById("links");
-      container.innerHTML = "";
-      // If in edit mode, show settings panel for title and background
-      if (editMode) {
-        const settings = document.createElement('div');
-        settings.className = 'settings-panel';
+    function loadSettings() {
+      const savedTitle = localStorage.getItem('pageTitle') || 'Ma page d\'accueil';
+      document.title = savedTitle + ' - Favoris';
+      el.mainTitle.textContent = savedTitle;
+      el.titleInput.value = savedTitle;
 
-        // structured settings with labels and preview
-        const fieldTitle = document.createElement('div'); fieldTitle.className = 'field';
-        const lblTitle = document.createElement('label'); lblTitle.textContent = 'Titre de la page';
-        const titleInput = document.createElement('input'); titleInput.type = 'text';
-        titleInput.placeholder = 'Titre de la page';
-        titleInput.value = localStorage.getItem('pageTitle') || document.querySelector('h1').textContent || '';
-        fieldTitle.appendChild(lblTitle); fieldTitle.appendChild(titleInput);
-
-        const fieldBg = document.createElement('div'); fieldBg.className = 'field';
-        const lblBg = document.createElement('label'); lblBg.textContent = 'Image de fond (URL)';
-        const bgInput = document.createElement('input'); bgInput.type = 'url';
-        bgInput.placeholder = 'https://... (optionnel)';
-        bgInput.value = localStorage.getItem('bgImage') || '';
-        fieldBg.appendChild(lblBg); fieldBg.appendChild(bgInput);
-
-        const previewWrap = document.createElement('div'); previewWrap.className = 'preview';
-        const prevImg = document.createElement('img'); prevImg.alt = 'Aperçu fond';
-        const prevText = document.createElement('div'); prevText.style.fontSize = '0.9rem'; prevText.style.color = '#64748b'; prevText.textContent = 'Aucun fond';
-        function updatePreviewSrc(src) {
-          if (!src) { prevImg.src = ''; prevImg.style.display = 'none'; prevText.style.display = 'block'; return; }
-          prevImg.style.display = 'block'; prevText.style.display = 'none'; prevImg.src = src;
-        }
-        if (bgInput.value) updatePreviewSrc(bgInput.value); else updatePreviewSrc('');
-        prevImg.onerror = () => { prevImg.style.display = 'none'; prevText.style.display = 'block'; };
-        previewWrap.appendChild(prevImg); previewWrap.appendChild(prevText);
-
-        const controls = document.createElement('div'); controls.className = 'controls';
-        const saveSettingsBtn = document.createElement('button'); saveSettingsBtn.textContent = 'Enregistrer'; saveSettingsBtn.classList.add('btn-save');
-        saveSettingsBtn.onclick = () => { saveSettings(titleInput.value, bgInput.value); };
-        const cancelSettingsBtn = document.createElement('button'); cancelSettingsBtn.textContent = 'Annuler'; cancelSettingsBtn.classList.add('btn-cancel');
-        cancelSettingsBtn.onclick = () => { renderLinks(); };
-        const clearBgBtn = document.createElement('button'); clearBgBtn.textContent = 'Effacer le fond'; clearBgBtn.classList.add('btn-delete');
-        clearBgBtn.onclick = () => { bgInput.value = ''; updatePreviewSrc(''); };
-        controls.appendChild(saveSettingsBtn); controls.appendChild(cancelSettingsBtn); controls.appendChild(clearBgBtn);
-
-        bgInput.addEventListener('input', () => { updatePreviewSrc(bgInput.value || ''); });
-
-        settings.appendChild(fieldTitle);
-        const rightCol = document.createElement('div'); rightCol.style.display = 'flex'; rightCol.style.flexDirection = 'column'; rightCol.style.alignItems = 'center'; rightCol.style.gap = '8px';
-        rightCol.appendChild(fieldBg); rightCol.appendChild(previewWrap); rightCol.appendChild(controls);
-        settings.appendChild(rightCol);
-        container.appendChild(settings);
-      }
-      const links = getLinks();
-        links.forEach((link, idx) => {
-  const item = document.createElement('div');
-  item.className = 'link-item';
-
-  const a = document.createElement("a");
-  a.className = 'link-anchor';
-  a.href = link.url;
-  a.textContent = link.name || link.url;
-
-        if (editMode) {
-          // prevent navigation in edit mode; clicking edits
-          a.addEventListener('click', (e) => { e.preventDefault(); editLink(idx); });
-        } else {
-          // open links in the same page, but try to open native app first when provided
-          a.target = '_self';
-          const hasApp = link.appUrl || link.intent;
-          if (hasApp) {
-            a.addEventListener('click', (e) => {
-              e.preventDefault();
-              tryOpenApp(link);
-            });
-          }
-        }
-
-        item.appendChild(a);
-
-          // show a small badge inside the link if this link has app information (indicates it can open an app)
-          // icon (emoji or image) if provided
-          if (link.icon) {
-            const ic = document.createElement('span');
-            ic.className = 'link-icon';
-            if (link.icon.match(/^data\//) || link.icon.match(/\.(png|jpg|jpeg|svg)$/i)) {
-              const img = document.createElement('img');
-              img.src = link.icon;
-              img.alt = '';
-              ic.appendChild(img);
-            } else {
-              ic.textContent = link.icon;
-            }
-            a.insertBefore(ic, a.firstChild);
-          }
-
-          if (!editMode && (link.appUrl || link.intent)) {
-            const badge = document.createElement('span');
-            badge.className = 'app-badge';
-            badge.textContent = '📱';
-            badge.title = 'Ouvrir dans l\'application si disponible';
-            a.appendChild(badge);
-          }
-
-        if (editMode) {
-          const editBtn = document.createElement('button');
-          editBtn.textContent = '✎';
-          editBtn.title = 'Modifier';
-          editBtn.onclick = () => editLink(idx);
-          item.appendChild(editBtn);
-
-          const delBtn = document.createElement('button');
-          delBtn.textContent = '🗑';
-          delBtn.title = 'Supprimer';
-          delBtn.onclick = () => { removeLink(idx); };
-          delBtn.classList.add('btn-delete');
-          item.appendChild(delBtn);
-
-          // move up / down controls for reordering
-          const upBtn = document.createElement('button');
-          upBtn.textContent = '▲';
-          upBtn.title = 'Monter';
-          upBtn.classList.add('btn-move');
-          upBtn.onclick = () => moveLinkUp(idx);
-          item.appendChild(upBtn);
-
-          const downBtn = document.createElement('button');
-          downBtn.textContent = '▼';
-          downBtn.title = 'Descendre';
-          downBtn.classList.add('btn-move');
-          downBtn.onclick = () => moveLinkDown(idx);
-          item.appendChild(downBtn);
-        }
-
-        container.appendChild(item);
-      });
-
-      if (editMode) {
-        const add = document.createElement('div');
-        add.className = 'add-link';
-        const addBtn = document.createElement('button');
-        addBtn.textContent = 'Ajouter un lien';
-        addBtn.onclick = addLink;
-        // on small screens, render export/import under the add block
-        try {
-          if (window.matchMedia && window.matchMedia('(max-width: 600px)').matches) {
-            const mobileExp = document.createElement('button');
-            mobileExp.textContent = 'Exporter (JSON)';
-            mobileExp.classList.add('btn-save');
-            mobileExp.style.display = 'block';
-            mobileExp.style.width = '100%';
-            mobileExp.style.marginTop = '8px';
-            mobileExp.onclick = exportLinks;
-            add.appendChild(mobileExp);
-
-            const mobileImp = document.createElement('button');
-            mobileImp.textContent = 'Importer (JSON)';
-            mobileImp.classList.add('btn-cancel');
-            mobileImp.style.display = 'block';
-            mobileImp.style.width = '100%';
-            mobileImp.style.marginTop = '6px';
-            mobileImp.onclick = () => { const inp = document.getElementById('importInput'); if (inp) inp.click(); };
-            add.appendChild(mobileImp);
-          }
-        } catch (e) {
-          // ignore matchMedia errors
-        }
-        add.appendChild(addBtn);
-        container.appendChild(add);
-      }
+      const bgImage = localStorage.getItem('bgImage') || '';
+      el.bgInput.value = bgImage;
+      applyBackground(bgImage);
     }
 
-    // Try to open a native app using a scheme or intent, then fallback to the web URL.
-    // Improved approach: listen for visibilitychange — if the document becomes hidden shortly after
-    // attempting the app open, assume the app was launched and don't navigate to the web fallback.
-    // Network status helpers
-    function setNetworkMessage(message, state) {
-      const el = document.getElementById('networkStatus');
-      if (!el) return;
-      el.textContent = message || '';
-      el.classList.remove('offline','online','hidden');
-      if (!message) { el.classList.add('hidden'); return; }
-      if (state === 'offline') el.classList.add('offline'); else el.classList.add('online');
+    function saveSettings() {
+      const title = (el.titleInput.value || '').trim() || 'Ma page d\'accueil';
+      const bgUrl = (el.bgInput.value || '').trim();
+
+      localStorage.setItem('pageTitle', title);
+      if (bgUrl) localStorage.setItem('bgImage', bgUrl);
+      else localStorage.removeItem('bgImage');
+
+      loadSettings();
     }
 
-    function updateNetworkStatus() {
-      if (navigator.onLine) {
-        setNetworkMessage('Tu es en ligne.', 'online');
-        setTimeout(() => setNetworkMessage('', ''), 2000);
-      } else {
-        setNetworkMessage('Hors ligne — certain·e·s liens web ne fonctionneront pas.', 'offline');
-      }
-    }
-
-    window.addEventListener('online', updateNetworkStatus);
-    window.addEventListener('offline', updateNetworkStatus);
-
-    // Try to open a native app using a scheme or intent, then fallback to the web URL.
-    // Behaviour: do NOT attempt the web fallback when the browser is offline.
-    function tryOpenApp(link) {
-      const web = link.url;
-      const app = link.appUrl || null;
-      const intent = link.intent || null;
-
-      const ua = navigator.userAgent || '';
-      const isAndroid = /Android/i.test(ua);
-
-      let hidden = false;
-      function onVisibility() { if (document.hidden || document.webkitHidden) hidden = true; }
-      document.addEventListener('visibilitychange', onVisibility);
-      window.addEventListener('pagehide', onVisibility);
-
-      const tryIntent = () => {
-        if (!intent) return false;
-        try { window.location.replace(intent); return true; } catch (e) { return false; }
-      };
-      const tryAppScheme = () => {
-        if (!app) return false;
-        try { window.location = app; return true; } catch (e) { return false; }
-      };
-
-      // If offline, do not attempt to open web fallback; just try app schemes/intents and show message
-      const offline = !navigator.onLine;
-
-      if (isAndroid && intent) {
-        tryIntent();
-        setTimeout(() => {
-          if (hidden) return; // app opened
-          if (tryAppScheme()) {
-            setTimeout(() => { if (hidden) return; if (!offline) window.location.href = web; else setNetworkMessage('Hors ligne — impossible d\'ouvrir la version web.', 'offline'); }, 900);
-          } else {
-            if (!offline) window.location.href = web; else setNetworkMessage('Hors ligne — impossible d\'ouvrir la version web.', 'offline');
-          }
-        }, 800);
-        return;
-      }
-
-      if (tryAppScheme()) {
-        setTimeout(() => { if (hidden) return; if (!offline) window.location.href = web; else setNetworkMessage('Hors ligne — impossible d\'ouvrir la version web.', 'offline'); }, 1200);
-        return;
-      }
-
-      if (!offline) window.location.href = web; else setNetworkMessage('Hors ligne — impossible d\'ouvrir la version web.', 'offline');
-    }
-
-    // Initialize network status display on load
-    updateNetworkStatus();
-
-    // wire up export/import bottom controls
-    document.addEventListener('DOMContentLoaded', () => {
-      const exp = document.getElementById('exportBtn');
-      const imp = document.getElementById('importBtn');
-      const inp = document.getElementById('importInput');
-      if (exp) exp.onclick = exportLinks;
-      if (imp && inp) {
-        imp.onclick = () => inp.click();
-        inp.onchange = (e) => {
-          const f = e.target.files && e.target.files[0];
-          if (f) importFromFile(f);
-          e.target.value = '';
-        };
-      }
-
-      const legalBtn = document.getElementById('legalBtn');
-      const closeLegalBtn = document.getElementById('closeLegalBtn');
-      const legalModal = document.getElementById('legalModal');
-
-      function closeLegalModal() {
-        if (!legalModal || !legalBtn) return;
-        legalModal.classList.remove('open');
-        legalModal.setAttribute('aria-hidden', 'true');
-        legalBtn.setAttribute('aria-expanded', 'false');
-        legalBtn.focus();
-      }
-
-      function openLegalModal() {
-        if (!legalModal || !legalBtn) return;
-        legalModal.classList.add('open');
-        legalModal.setAttribute('aria-hidden', 'false');
-        legalBtn.setAttribute('aria-expanded', 'true');
-        const closeBtn = document.getElementById('closeLegalBtn');
-        if (closeBtn) closeBtn.focus();
-      }
-
-      if (legalBtn && legalModal) {
-        legalBtn.addEventListener('click', openLegalModal);
-        legalModal.addEventListener('click', (e) => {
-          if (e.target === legalModal) closeLegalModal();
-        });
-      }
-      if (closeLegalBtn) closeLegalBtn.addEventListener('click', closeLegalModal);
-
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && legalModal && legalModal.classList.contains('open')) {
-          closeLegalModal();
-        }
-      });
-    });
-
-    function toggleEditMode() {
-      editMode = !editMode;
-      document.getElementById('editBtn').textContent = editMode ? 'Terminer' : 'Personnaliser';
-      // show/hide reset button depending on edit mode
-      const reset = document.getElementById('resetBtn');
-      if (reset) reset.style.display = editMode ? 'inline-block' : 'none';
-      // toggle body classes so mobile CSS can add bottom padding and show reset when needed
-    if (editMode) {
-      document.body.classList.add('editing');
-      document.body.classList.add('show-reset');
-      const editBtn = document.getElementById('editBtn'); if (editBtn) editBtn.classList.add('btn-save');
-      const exp = document.getElementById('exportBtn'); if (exp) exp.style.display = 'inline-block';
-      const imp = document.getElementById('importBtn'); if (imp) imp.style.display = 'inline-block';
-    } else {
-      document.body.classList.remove('editing');
-      document.body.classList.remove('show-reset');
-      const editBtn = document.getElementById('editBtn'); if (editBtn) editBtn.classList.remove('btn-save');
-      const exp = document.getElementById('exportBtn'); if (exp) exp.style.display = 'none';
-      const imp = document.getElementById('importBtn'); if (imp) imp.style.display = 'none';
-    }
+    function setEditMode(state) {
+      editMode = state;
+      el.settingsPanel.classList.toggle('d-none', !state);
+      el.addBtn.classList.toggle('d-none', !state);
+      el.exportBtn.classList.toggle('d-none', !state);
+      el.importBtn.classList.toggle('d-none', !state);
+      el.resetBtn.classList.toggle('d-none', !state);
+      el.legalBtn.classList.toggle('d-none', !state);
+      el.toggleSettingsBtn.textContent = state ? 'Fermer parametres' : 'Parametres';
+      el.toggleSettingsBtn.className = state ? 'btn btn-success' : 'btn btn-primary';
       renderLinks();
     }
 
-    function editLink(index) {
+    function openLinkModal(index) {
       const links = getLinks();
-      const container = document.getElementById('links');
-      // replace the specific item with an edit form
-  // find the .link-item elements only (ignore settings panel / other nodes)
-  const items = container.querySelectorAll('.link-item');
-  const target = items[index];
-      if (!target) return;
+      currentEditIndex = index;
+      const creating = index === null;
+      const current = creating ? { name: '', url: 'https://', appUrl: '', intent: '', icon: '' } : links[index];
 
-      const form = document.createElement('div');
-      form.style.display = 'inline-block';
-      form.style.padding = '8px';
-      form.style.background = '#fff';
-      form.style.borderRadius = '6px';
-      form.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+      linkModalLabel.textContent = creating ? 'Ajouter un lien' : 'Modifier un lien';
+      linkNameInput.value = current?.name || '';
+      linkUrlInput.value = current?.url || 'https://';
+      linkAppInput.value = current?.appUrl || '';
+      linkIntentInput.value = current?.intent || '';
+      linkIconInput.value = current?.icon || '';
 
-  const nameInput = document.createElement('input');
-  nameInput.value = links[index]?.name || '';
-  nameInput.placeholder = 'Nom';
-  nameInput.style.marginRight = '6px';
-
-  const urlInput = document.createElement('input');
-  urlInput.value = links[index]?.url || 'https://';
-  urlInput.placeholder = 'https://...';
-  urlInput.style.marginRight = '6px';
-  urlInput.style.width = '220px';
-
-  // app-specific fields
-  const appInput = document.createElement('input');
-  appInput.value = links[index]?.appUrl || '';
-  appInput.placeholder = 'Scheme d\'application (ex: vnd.youtube://, whatsapp://)';
-  appInput.style.marginTop = '6px';
-  appInput.style.display = 'block';
-  appInput.style.width = '100%';
-
-  // altAppUrl removed to simplify form
-
-  const intentInput = document.createElement('input');
-  intentInput.value = links[index]?.intent || '';
-  intentInput.placeholder = 'Intent Android (optionnel)';
-  intentInput.style.marginTop = '6px';
-  intentInput.style.display = 'block';
-  intentInput.style.width = '100%';
-
-  const iconInput = document.createElement('input');
-  iconInput.value = links[index]?.icon || '';
-  iconInput.placeholder = 'Emoji ou chemin image (ex: data/logo/youtube.png)';
-  iconInput.style.marginTop = '6px';
-  iconInput.style.display = 'block';
-  iconInput.style.width = '100%';
-
-      const saveBtn = document.createElement('button');
-      saveBtn.textContent = 'Enregistrer';
-      saveBtn.onclick = () => {
-        links[index] = {
-          name: nameInput.value || urlInput.value,
-          url: urlInput.value,
-          appUrl: appInput.value || undefined,
-          intent: intentInput.value || undefined,
-          icon: iconInput.value || undefined
-        };
-        localStorage.setItem('links', JSON.stringify(links));
-        renderLinks();
-      };
-  saveBtn.classList.add('btn-save');
-
-      const cancelBtn = document.createElement('button');
-      cancelBtn.textContent = 'Annuler';
-      cancelBtn.style.marginLeft = '6px';
-      cancelBtn.onclick = () => { renderLinks(); };
-  cancelBtn.classList.add('btn-cancel');
-
-  form.appendChild(nameInput);
-  form.appendChild(urlInput);
-  form.appendChild(appInput);
-  form.appendChild(intentInput);
-  form.appendChild(iconInput);
-  form.appendChild(saveBtn);
-  form.appendChild(cancelBtn);
-
-      target.replaceWith(form);
-      nameInput.focus();
+      linkModal.show();
+      setTimeout(() => linkNameInput.focus(), 120);
     }
 
-    function addLink() {
+    function saveLinkFromModal() {
       const links = getLinks();
-      links.push({ name: '', url: 'https://', appUrl: '', intent: '', icon: '' });
-      localStorage.setItem('links', JSON.stringify(links));
+      const payload = {
+        name: (linkNameInput.value || '').trim() || sanitizeUrl(linkUrlInput.value),
+        url: sanitizeUrl(linkUrlInput.value),
+        appUrl: (linkAppInput.value || '').trim() || undefined,
+        intent: (linkIntentInput.value || '').trim() || undefined,
+        icon: (linkIconInput.value || '').trim() || undefined
+      };
+
+      if (!payload.url) {
+        alert('Merci de renseigner une URL valide.');
+        return;
+      }
+
+      if (currentEditIndex === null) links.push(payload);
+      else links[currentEditIndex] = payload;
+
+      setLinks(links);
+      linkModal.hide();
       renderLinks();
-      // open editor for the new last item
-      setTimeout(() => editLink(links.length - 1), 50);
     }
 
     function removeLink(index) {
       const links = getLinks();
       links.splice(index, 1);
-      localStorage.setItem('links', JSON.stringify(links));
+      setLinks(links);
       renderLinks();
     }
 
-    function moveLinkUp(index) {
+    function moveLink(index, direction) {
       const links = getLinks();
-      if (index <= 0 || index >= links.length) return;
-      const tmp = links[index-1];
-      links[index-1] = links[index];
-      links[index] = tmp;
-      localStorage.setItem('links', JSON.stringify(links));
+      const target = index + direction;
+      if (target < 0 || target >= links.length) return;
+      const temp = links[target];
+      links[target] = links[index];
+      links[index] = temp;
+      setLinks(links);
       renderLinks();
     }
 
-    function moveLinkDown(index) {
+    function tryOpenApp(link) {
+      const web = link.url;
+      const app = link.appUrl || null;
+      const intent = link.intent || null;
+      const isAndroid = /Android/i.test(navigator.userAgent || '');
+      const offline = !navigator.onLine;
+
+      let hidden = false;
+      const onVisibility = () => {
+        if (document.hidden) hidden = true;
+      };
+      document.addEventListener('visibilitychange', onVisibility, { once: true });
+
+      const fallback = () => {
+        if (offline) {
+          alert('Hors ligne: impossible d\'ouvrir la version web pour le moment.');
+          return;
+        }
+        window.location.href = web;
+      };
+
+      if (isAndroid && intent) {
+        try {
+          window.location.replace(intent);
+          setTimeout(() => {
+            if (!hidden && app) {
+              window.location.href = app;
+              setTimeout(() => {
+                if (!hidden) fallback();
+              }, 900);
+            } else if (!hidden) {
+              fallback();
+            }
+          }, 750);
+          return;
+        } catch (_e) {
+          fallback();
+          return;
+        }
+      }
+
+      if (app) {
+        try {
+          window.location.href = app;
+          setTimeout(() => {
+            if (!hidden) fallback();
+          }, 1100);
+          return;
+        } catch (_e) {
+          fallback();
+          return;
+        }
+      }
+
+      fallback();
+    }
+
+    function createIconNode(icon) {
+      if (!icon) return null;
+      const wrap = document.createElement('span');
+      wrap.className = 'fs-5';
+
+      if (/^https?:\/\//i.test(icon) || /^data:/i.test(icon)) {
+        const img = document.createElement('img');
+        img.src = icon;
+        img.alt = '';
+        img.width = 22;
+        img.height = 22;
+        img.className = 'rounded';
+        wrap.replaceChildren(img);
+      } else {
+        wrap.textContent = icon;
+      }
+      return wrap;
+    }
+
+    function renderLinks() {
       const links = getLinks();
-      if (index < 0 || index >= links.length-1) return;
-      const tmp = links[index+1];
-      links[index+1] = links[index];
-      links[index] = tmp;
-      localStorage.setItem('links', JSON.stringify(links));
-      renderLinks();
+      el.links.innerHTML = '';
+
+      links.forEach((link, idx) => {
+        const col = document.createElement('div');
+        col.className = editMode ? 'col-12' : 'col-12 col-sm-6 col-lg-4';
+
+        const card = document.createElement('article');
+        card.className = 'shortcut-card card border-0 shadow-sm h-100';
+
+        const body = document.createElement('div');
+        body.className = 'card-body p-2';
+
+        const top = document.createElement('div');
+        top.className = 'd-flex align-items-center gap-2';
+
+        const linkBtn = document.createElement('button');
+        linkBtn.type = 'button';
+        linkBtn.className = 'shortcut-link btn btn-light border d-flex align-items-center justify-content-between gap-2 w-100';
+
+        const left = document.createElement('span');
+        left.className = 'd-flex align-items-center gap-2 flex-grow-1';
+        const iconNode = createIconNode(link.icon);
+        if (iconNode) left.appendChild(iconNode);
+
+        const title = document.createElement('span');
+        title.className = 'shortcut-title';
+        title.textContent = link.name || link.url;
+        left.appendChild(title);
+
+        linkBtn.appendChild(left);
+
+        if (!editMode && (link.appUrl || link.intent)) {
+          const badge = document.createElement('span');
+          badge.className = 'badge text-bg-primary';
+          badge.textContent = 'App';
+          linkBtn.appendChild(badge);
+        }
+
+        linkBtn.addEventListener('click', () => {
+          if (editMode) openLinkModal(idx);
+          else if (link.appUrl || link.intent) tryOpenApp(link);
+          else window.location.href = link.url;
+        });
+
+        top.appendChild(linkBtn);
+        body.appendChild(top);
+
+        if (editMode) {
+          const actions = document.createElement('div');
+          actions.className = 'd-flex flex-wrap gap-2 mt-2';
+
+          const editBtn = document.createElement('button');
+          editBtn.type = 'button';
+          editBtn.className = 'btn btn-outline-primary btn-sm';
+          editBtn.textContent = 'Modifier';
+          editBtn.addEventListener('click', () => openLinkModal(idx));
+
+          const delBtn = document.createElement('button');
+          delBtn.type = 'button';
+          delBtn.className = 'btn btn-outline-danger btn-sm';
+          delBtn.textContent = 'Supprimer';
+          delBtn.addEventListener('click', () => removeLink(idx));
+
+          const upBtn = document.createElement('button');
+          upBtn.type = 'button';
+          upBtn.className = 'btn btn-outline-secondary btn-sm';
+          upBtn.textContent = 'Monter';
+          upBtn.addEventListener('click', () => moveLink(idx, -1));
+
+          const downBtn = document.createElement('button');
+          downBtn.type = 'button';
+          downBtn.className = 'btn btn-outline-secondary btn-sm';
+          downBtn.textContent = 'Descendre';
+          downBtn.addEventListener('click', () => moveLink(idx, 1));
+
+          actions.append(editBtn, delBtn, upBtn, downBtn);
+          body.appendChild(actions);
+        }
+
+        card.appendChild(body);
+        col.appendChild(card);
+        el.links.appendChild(col);
+      });
     }
 
-    // Export current data (links + pageTitle + bgImage) as a JSON file
     function exportLinks() {
       const payload = {
         links: getLinks(),
@@ -901,37 +609,43 @@
         bgImage: localStorage.getItem('bgImage') || null,
         exportedAt: new Date().toISOString()
       };
+
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'favoris-backup-' + (new Date()).toISOString().replace(/[:.]/g,'-') + '.json';
+      a.download = 'favoris-backup-' + new Date().toISOString().replace(/[:.]/g, '-') + '.json';
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
     }
 
-    // Import JSON file (expects same shape as exportLinks payload)
     function importFromFile(file) {
       const reader = new FileReader();
       reader.onload = () => {
         try {
           const data = JSON.parse(reader.result);
           if (!data || !Array.isArray(data.links)) {
-            alert('Fichier JSON invalide : le champ "links" est absent ou incorrect.');
+            alert('Le JSON importe est invalide.');
             return;
           }
-          const ok = confirm('Importer les données depuis le fichier va remplacer vos favoris locaux. Continuer ?');
+
+          const ok = confirm('Importer ce fichier remplacera tes donnees locales. Continuer ?');
           if (!ok) return;
+
           localStorage.setItem('links', JSON.stringify(data.links));
-          if (data.pageTitle) localStorage.setItem('pageTitle', data.pageTitle); else localStorage.removeItem('pageTitle');
-          if (data.bgImage) localStorage.setItem('bgImage', data.bgImage); else localStorage.removeItem('bgImage');
-          alert('Importation terminée.');
+          if (data.pageTitle) localStorage.setItem('pageTitle', data.pageTitle);
+          else localStorage.removeItem('pageTitle');
+
+          if (data.bgImage) localStorage.setItem('bgImage', data.bgImage);
+          else localStorage.removeItem('bgImage');
+
           loadSettings();
           renderLinks();
+          alert('Import termine.');
         } catch (err) {
-          alert('Erreur lors de la lecture du fichier : ' + err.message);
+          alert('Erreur de lecture: ' + err.message);
         }
       };
       reader.onerror = () => alert('Impossible de lire le fichier.');
@@ -939,12 +653,32 @@
     }
 
     function resetStorage() {
-      const ok = confirm("Voulez-vous vraiment réinitialiser les liens enregistrés ? Cela restaurera les valeurs par défaut.");
+      const ok = confirm('Reinitialiser tous les favoris et revenir a la configuration par defaut ?');
       if (!ok) return;
-      localStorage.removeItem("links");
+      localStorage.removeItem('links');
+      localStorage.removeItem('pageTitle');
+      localStorage.removeItem('bgImage');
+      loadSettings();
       renderLinks();
-      alert("Les liens ont été réinitialisés aux valeurs par défaut.");
     }
+
+    el.toggleSettingsBtn.addEventListener('click', () => setEditMode(!editMode));
+    el.addBtn.addEventListener('click', () => openLinkModal(null));
+    el.saveSettingsBtn.addEventListener('click', saveSettings);
+    el.clearBgBtn.addEventListener('click', () => {
+      el.bgInput.value = '';
+      saveSettings();
+    });
+
+    saveLinkBtn.addEventListener('click', saveLinkFromModal);
+    el.exportBtn.addEventListener('click', exportLinks);
+    el.importBtn.addEventListener('click', () => el.importInput.click());
+    el.importInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) importFromFile(file);
+      e.target.value = '';
+    });
+    el.resetBtn.addEventListener('click', resetStorage);
 
     loadSettings();
     renderLinks();

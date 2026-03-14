@@ -12,14 +12,17 @@
 Une **page d’accueil minimaliste et responsive** pour regrouper tous vos liens favoris, sans dépendance externe.
 Tout est contenu dans un seul fichier HTML.
 
+La version actuelle est **mobile-first** et utilise **Bootstrap 5** comme base principale pour le graphisme et les composants.
+
 ### ⚙️ Fonctionnalités principales
 
-* 🖋️ **Édition inline** des raccourcis (mode “Personnaliser”)
+* 🎨 **Interface modernisée** mobile-first avec Bootstrap
+* ⚙️ **Mode “Paramètres”** pour gérer l’édition
 * ➕ **Ajout / suppression / modification** de liens
 * 🧭 **Titre de page et image de fond** personnalisables (avec flou et vérification de chargement)
 * 🔄 **Réinitialisation** des liens à l’état par défaut
 * 📱 **Responsive** : adapté aux mobiles et au tactile
-* ⚖️ **Mentions légales** accessibles via un bouton en bas de page (popup intégrée)
+* ⚖️ **Mentions légales** accessibles via un bouton visible uniquement en mode **Paramètres**
 
 
 ---
@@ -27,7 +30,7 @@ Tout est contenu dans un seul fichier HTML.
 ## 🚀 Comment l’utiliser
 
 1. **Ouvre** le fichier `index.html` dans ton navigateur (double-clic ou via `Fichier → Ouvrir`).
-2. **Clique sur “Personnaliser”** (en bas à droite) pour activer le mode édition.
+2. **Clique sur “Paramètres”** (bouton flottant en bas à droite) pour activer le mode édition.
 3. Dans ce mode, tu peux :
 
    * 🗑 **Supprimer** un lien
@@ -41,11 +44,11 @@ Tout est contenu dans un seul fichier HTML.
 
    * le **titre** de la page
    * l’**image d’arrière-plan** (avec prévisualisation et vérification du chargement)
-5. Clique sur **“Terminer”** pour enregistrer tes changements et quitter le mode édition.
+5. Clique sur **“Fermer paramètres”** pour quitter le mode édition.
 6. Si besoin, le bouton **“Réinitialiser”** restaure les liens par défaut.
 7. Pour sauvegarder et transférer tes favoris entre appareils :
 
-    * Dans le mode **Personnaliser**, deux nouveaux boutons apparaissent en bas de la page : **Exporter (JSON)** et **Importer (JSON)**.
+  * Dans le mode **Paramètres**, deux nouveaux boutons apparaissent en bas de la page : **Exporter (JSON)** et **Importer (JSON)**.
     * **Exporter (JSON)** télécharge un fichier contenant tes favoris (`links`), le titre de la page (`pageTitle`) et l'image de fond (`bgImage`).
     * **Importer (JSON)** permet de charger ce fichier sur un autre appareil. L'import remplace les données locales (confirmation demandée).
 
@@ -78,24 +81,48 @@ Chaque lien est enregistré sous forme d’objet dans `links` :
 | `intent` *(optionnel)*    | **Intent Android** (ex: `intent://www.youtube.com/#Intent;...;end`) |
 | `icon` *(optionnel)*      | **Emoji** ou chemin d’image                                         |
 
+### Structure JSON attendue (import/export)
+
+```json
+{
+  "links": [
+    {
+      "name": "YouTube",
+      "url": "https://www.youtube.com",
+      "appUrl": "vnd.youtube://",
+      "intent": "intent://www.youtube.com/#Intent;package=com.google.android.youtube;scheme=https;end",
+      "icon": "📹"
+    },
+    {
+      "name": "Google",
+      "url": "https://www.google.com"
+    }
+  ],
+  "pageTitle": "Ma page d'accueil",
+  "bgImage": "https://images.unsplash.com/photo-...",
+  "exportedAt": "2026-03-15T12:00:00.000Z"
+}
+```
+
+Champs optionnels :
+
+* `appUrl`, `intent`, `icon` (dans chaque lien)
+* `pageTitle`, `bgImage`, `exportedAt` (au niveau racine)
+
 
 ---
 
 ## ⚡ Notes & limitations
 
-* **Ouverture d’apps :** si un lien contient `appUrl`, `intent` ou `altAppUrl`, la page tente d’ouvrir l’application native.
+* **Ouverture d’apps :** si un lien contient `appUrl` ou `intent`, la page tente d’ouvrir l’application native.
   Si elle n’est pas installée → redirection vers la version web.
-* **Mode hors-ligne :**
-
-  * Un message s’affiche sous le titre quand l’appareil est déconnecté.
-  * Si hors-ligne, les redirections web sont désactivées.
 * **Légèreté :** aucun build, tout le code est dans `index.html`.
 
 ---
 
 ## ⚖️ Mentions légales
 
-Depuis la page d'accueil, le bouton **"Mentions légales"** (en bas de page) ouvre une popup qui contient :
+Depuis la page d'accueil, le bouton **"Mentions légales"** (visible uniquement en mode **Paramètres**) ouvre une popup qui contient :
 
 * l'éditeur du site
 * l'URL officielle
